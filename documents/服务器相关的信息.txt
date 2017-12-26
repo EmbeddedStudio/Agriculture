@@ -1,0 +1,13 @@
+服务器的地址　　117.21.178.99:8099
+
+登录名　285417644@qq.com
+密码 　  jxust001
+
+LED
+端口号      a6aa0e70-a5f6-11e7-8d02-353f63eeab61
+端口密码    MO3ZWweCvculYL83cPm7
+
+DHT11
+端口号      8cb59020-a5f1-11e7-b8a4-353f63eeab61
+端口密码    wedsfsdfsdfddfeefedf
+

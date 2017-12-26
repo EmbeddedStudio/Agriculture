@@ -12,7 +12,7 @@
 #define LEDID "a6aa0e70-a5f6-11e7-8d02-353f63eeab61"
 #define DHTID "8cb59020-a5f1-11e7-b8a4-353f63eeab61"
 
-#define DHTTYPE DHT11
+
 
 #define GPIO0 0
 #define GPIO2 2
@@ -20,7 +20,10 @@
 
 #define GPIO0_PIN 3
 #define GPIO2_PIN 5
+
+#define DHTTYPE DHT11
 DHT dht(DHTPIN, DHTTYPE);
+
 //dht11 DHT11;
 float dhtHum = 0.0;
 float dhtTem = 0.0;
@@ -59,9 +62,9 @@ void loop() {
   if ( !client.connected() || !client2.connected()) {
     reconnect();
   }
-
-  client.loop();
   client2.loop();
+  client.loop();
+  
   dht11Func();
 
 }
@@ -69,8 +72,9 @@ void loop() {
 void dht11Func() {
   if (lastSend == 0 || millis() - lastSend >= 3000) {
     lastSend = millis();
-//    int chk = DHT11.read(DHTPIN);
-//    Serial.print("Read sensor: ");
+ //   int chk = DHT11.read(DHTPIN);
+    
+    Serial.print("Read sensor: ");
 //    switch (chk)
 //    {
 //      case DHTLIB_OK:
@@ -86,37 +90,27 @@ void dht11Func() {
 //        Serial.println("Unknown error");
 //        break;
 //    }
-//    dhtHum = (float)DHT11.humidity;
-//    Serial.print("Humidity(%):");
-//    Serial.println(dhtHum);
-//
-//    dhtTem = (float)DHT11.temperature;
-//    Serial.print("Temperature(℃):");
-//    Serial.println(dhtTem);
-
     dhtHum = dht.readHumidity();
-    dhtTem = dht.readTemperature();
+    Serial.print("Humidity(%):");
+    Serial.println(dhtHum);
 
-//    Serial.println("Sending current DHT11 status ...");
-    if ( isnan(dhtHum) || isnan(dhtTem) ) 
-    {
-      Serial.println("Failed to read from DHT sensor!");
-      return;
-    }
-    Serial.print("Humidity: ");
-    Serial.print(dhtHum);
-    Serial.print(" %\t");
-    Serial.print("Temperature: ");
-    Serial.print(dhtTem);
-    Serial.print(" *C ");
-    client.publish(StateTopicAddr, get_dht11_status().c_str());
+    dhtTem = dht.readTemperature();
+    Serial.print("Temperature(℃):");
+    Serial.println(dhtTem);
+
+
+    Serial.println("Sending current DHT11 status ...");
+//    if ( isnan(dhtHum) || isnan(dhtTem) ) 
+//    {
+//      Serial.println("Failed to read from DHT sensor!");
+//      return;
+//    }
+    client2.publish(StateTopicAddr, get_dht11_status().c_str());
   }
 }
 // The callback for when a PUBLISH message is received from the server.
-void on_message(const char* topic, byte* payload, unsigned int length) {
-
-
-
+void on_message(const char* topic, byte* payload, unsigned int length) 
+{
   char json[length + 1];
   strncpy (json, (char*)payload, length);
   json[length] = '\0';
@@ -154,6 +148,7 @@ void on_message(const char* topic, byte* payload, unsigned int length) {
     client.publish(StateTopicAddr, get_gpio_status().c_str());
   }
 }
+
 String get_dht11_status() {
   StaticJsonBuffer<200> jsonBuffer;
   JsonObject& data = jsonBuffer.createObject();
@@ -197,12 +192,14 @@ void set_gpio_status(int pin, boolean enabled) {
   }
 }
 
-void InitWiFi() {
+void InitWiFi() 
+{
   Serial.println("Connecting to AP ...");
   // attempt to connect to WiFi network
 
   WiFi.begin(WIFI_AP, WIFI_PASSWORD);
-  while (WiFi.status() != WL_CONNECTED) {
+  while (WiFi.status() != WL_CONNECTED) 
+  {
     delay(500);
     Serial.print(".");
   }
@@ -214,9 +211,11 @@ void reconnect() {
   // Loop until we're reconnected
   while (!client.connected() || !client2.connected()) {
     status = WiFi.status();
-    if ( status != WL_CONNECTED) {
+    if ( status != WL_CONNECTED) 
+    {
       WiFi.begin(WIFI_AP, WIFI_PASSWORD);
-      while (WiFi.status() != WL_CONNECTED) {
+      while (WiFi.status() != WL_CONNECTED) 
+      {
         delay(500);
         Serial.print(".");
       }
@@ -232,7 +231,9 @@ void reconnect() {
       Serial.println("Sending current GPIO status ...");
       client.publish(StateTopicAddr, get_gpio_status().c_str());
       client2.publish(StateTopicAddr, get_dht11_status().c_str());
-    } else {
+    } 
+    else 
+    {
       Serial.print( "[FAILED] [ rc = " );
       Serial.print( client.state() );
       Serial.println( " : retrying in 5 seconds]" );

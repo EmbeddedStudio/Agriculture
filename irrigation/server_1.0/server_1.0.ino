@@ -8,8 +8,8 @@ char pass[] = "dianxin132";
 #define GPIO2 2
 #define GPIO4 4
 
-#define LEDID "3115"          //设备接口
-#define LEDTOKEN "52e38a188"  //设备密码
+//#define LEDID "3115"          //设备接口
+//#define LEDTOKEN "52e38a188"  //设备密码
 
 unsigned int httpPort = 8181;
 
@@ -18,6 +18,8 @@ const char *host = "121.42.180.30";
 WiFiClient client;
 
 int status = WL_IDLE_STATUS;
+
+long last_time = 0;
 
 void setup()
 {
@@ -46,20 +48,20 @@ void setup()
   Serial.println(WiFi.macAddress());
 
 }
-long last_time = 0;
+
 void loop()
 {
   while (!client.connected())//几个非连接的异常处理
   {
     if (!client.connect(host, httpPort))
     {
-      Serial.print("disconnect");
+      Serial.print("disconnect ");
       //client.stop();
       delay(500);
     }
     else
     {
-      Serial.print("chickin");
+      Serial.print("chickin\n");
       client.print("{\"M\":\"checkin\",\"ID\":\"3115\",\"K\":\"52e38a188\"}\r\n");
       delay(500);
     }
@@ -69,23 +71,42 @@ void loop()
   {
     toggle(GPIO4);
     String s = client.readString();
-    Serial.println(s);
-    char a[100] = "";
-    for (int i = 0; i < 100; i++)
-    {
-      a[i] = s[i];
-    }
-    if ( strstr(a, "offOn") != NULL )
+    String str = "";
+    //    char a[100] = "";
+    int count_f; //储存分离出来字符串
+    int count_r; //储存分离出来字符串
+    int num = 0; //储存云端下发的阀值
+
+    //    for (int i = 0; i < 100; i++)
+    //    {
+    //      a[i] = s[i];
+    //    }
+    if ( s.indexOf("offOn") != -1 )
     {
       toggle(GPIO2);
     }
-    if ( strstr(a, "play") != NULL )
+    else if ( s.indexOf("play") != -1 )
     {
       toggle(GPIO0);
     }
-//        Serial.println(s);
-//        Serial.println(a);
     Serial.println(s);
+    count_f = s.indexOf("\"C\"");
+    count_r = s.indexOf("\"T\"");
+    if (count_f != -1) //如果有分隔符存在就向下执行
+    {
+
+      // Serial.println( s.substring(0, count_f)); //打印出第一个逗号位置的字符串
+      str = s.substring(count_f + 5, count_r - 2); //打印字符串，从当前位置+5开始 得到不带引号的字符数字
+      Serial.println(str);
+      char cstr[10] = "";
+      for (int i = 0; i < 10; i++)
+      {
+        cstr[i] = str[i];
+      }
+      num = atoi(cstr);
+      Serial.println(num);
+    }
+
     delay(500);
   }
   //  if (Serial.available())//串口读取到的转发到wifi，因为串口是一位一位的发送所以在这里缓存完再发送
@@ -97,7 +118,7 @@ void loop()
   //    delay(500);
   //  }
 
-  if (millis() - last_time > 1000) {
+  if (millis() - last_time > 2000) {
     last_time = millis();
     String s = "{\"M\":\"update\",\"ID\":\"3115\",\"V\":{\"2948\":\"15.3\"}}\n";
     client.print(s);
@@ -107,7 +128,7 @@ void loop()
   }
 }
 
-void toggle(int GPIO)
+void toggle(int GPIO)   //以灯的反转作为测试代码
 {
   if ( HIGH == digitalRead(GPIO) )
   {

@@ -97,7 +97,7 @@ void loop()
 
       // Serial.println( s.substring(0, count_f)); //打印出第一个逗号位置的字符串
       str = s.substring(count_f + 5, count_r - 2); //打印字符串，从当前位置+5开始 得到不带引号的字符数字
-      Serial.println(str);
+//      Serial.println(str);
       char cstr[10] = "";
       for (int i = 0; i < 10; i++)
       {

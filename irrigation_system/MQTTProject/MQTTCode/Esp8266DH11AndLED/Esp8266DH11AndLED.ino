@@ -12,7 +12,8 @@
 #define LEDID "a6aa0e70-a5f6-11e7-8d02-353f63eeab61"
 #define DHTID "8cb59020-a5f1-11e7-b8a4-353f63eeab61"
 
-
+//#define  greenhouseID  "8e27efe0-eb81-11e7-8341-353f63eeab61"
+//#define  greenhouseKEY "i8j8gFS00lwaNzSOxrEe"
 
 #define GPIO0 0
 #define GPIO2 2
@@ -42,7 +43,7 @@ int status = WL_IDLE_STATUS;
 // We assume that all GPIOs are LOW
 boolean gpioState[] = {false, false};
 
-void setup() 
+void setup()
 {
   Serial.begin(115200);
   // Set output mode for all GPIO pins
@@ -54,7 +55,7 @@ void setup()
   client.setServer( ServerAddr, 1883 );
   client2.setServer( ServerAddr, 1883 );
   client.setCallback(on_message);
-   
+
 }
 
 unsigned long lastSend = 0;
@@ -64,7 +65,7 @@ void loop() {
   }
   client2.loop();
   client.loop();
-  
+
   dht11Func();
 
 }
@@ -72,24 +73,24 @@ void loop() {
 void dht11Func() {
   if (lastSend == 0 || millis() - lastSend >= 3000) {
     lastSend = millis();
- //   int chk = DHT11.read(DHTPIN);
-    
+    //   int chk = DHT11.read(DHTPIN);
+
     Serial.print("Read sensor: ");
-//    switch (chk)
-//    {
-//      case DHTLIB_OK:
-//        Serial.println("OK");
-//        break;
-//      case DHTLIB_ERROR_CHECKSUM:
-//        Serial.println("Checksum error");
-//        break;
-//      case DHTLIB_ERROR_TIMEOUT:
-//        Serial.println("Time out error");
-//        break;
-//      default:
-//        Serial.println("Unknown error");
-//        break;
-//    }
+    //    switch (chk)
+    //    {
+    //      case DHTLIB_OK:
+    //        Serial.println("OK");
+    //        break;
+    //      case DHTLIB_ERROR_CHECKSUM:
+    //        Serial.println("Checksum error");
+    //        break;
+    //      case DHTLIB_ERROR_TIMEOUT:
+    //        Serial.println("Time out error");
+    //        break;
+    //      default:
+    //        Serial.println("Unknown error");
+    //        break;
+    //    }
     dhtHum = dht.readHumidity();
     Serial.print("Humidity(%):");
     Serial.println(dhtHum);
@@ -100,16 +101,16 @@ void dht11Func() {
 
 
     Serial.println("Sending current DHT11 status ...");
-//    if ( isnan(dhtHum) || isnan(dhtTem) ) 
-//    {
-//      Serial.println("Failed to read from DHT sensor!");
-//      return;
-//    }
+    //    if ( isnan(dhtHum) || isnan(dhtTem) )
+    //    {
+    //      Serial.println("Failed to read from DHT sensor!");
+    //      return;
+    //    }
     client2.publish(StateTopicAddr, get_dht11_status().c_str());
   }
 }
 // The callback for when a PUBLISH message is received from the server.
-void on_message(const char* topic, byte* payload, unsigned int length) 
+void on_message(const char* topic, byte* payload, unsigned int length)
 {
   char json[length + 1];
   strncpy (json, (char*)payload, length);
@@ -192,29 +193,35 @@ void set_gpio_status(int pin, boolean enabled) {
   }
 }
 
-void InitWiFi() 
+void InitWiFi()
 {
   Serial.println("Connecting to AP ...");
   // attempt to connect to WiFi network
 
   WiFi.begin(WIFI_AP, WIFI_PASSWORD);
-  while (WiFi.status() != WL_CONNECTED) 
+  while (WiFi.status() != WL_CONNECTED)
   {
     delay(500);
     Serial.print(".");
   }
   Serial.println("Connected to AP");
+  Serial.println("IP address: ");
+  Serial.println(WiFi.localIP());//WiFi.localIP()返回8266获得的ip地址
+  Serial.println("mac address");
+  Serial.println(WiFi.macAddress());
 }
 
 
-void reconnect() {
+void reconnect() 
+{
   // Loop until we're reconnected
-  while (!client.connected() || !client2.connected()) {
+  while (!client.connected() || !client2.connected()) 
+  {
     status = WiFi.status();
-    if ( status != WL_CONNECTED) 
+    if ( status != WL_CONNECTED)
     {
       WiFi.begin(WIFI_AP, WIFI_PASSWORD);
-      while (WiFi.status() != WL_CONNECTED) 
+      while (WiFi.status() != WL_CONNECTED)
       {
         delay(500);
         Serial.print(".");
@@ -231,8 +238,8 @@ void reconnect() {
       Serial.println("Sending current GPIO status ...");
       client.publish(StateTopicAddr, get_gpio_status().c_str());
       client2.publish(StateTopicAddr, get_dht11_status().c_str());
-    } 
-    else 
+    }
+    else
     {
       Serial.print( "[FAILED] [ rc = " );
       Serial.print( client.state() );

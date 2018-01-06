@@ -1,23 +1,32 @@
 #include <ESP8266WiFi.h>
 #include <ArduinoJson.h>
+#include <PubSubClient.h>
+#include<DHT.h>
 
 char ssid[] = "s008-flying";
 char pass[] = "dianxin132";
+
+#define  greenhouseID  "8e27efe0-eb81-11e7-8341-353f63eeab61"
+#define  greenhouseKEY "i8j8gFS00lwaNzSOxrEe"
 
 #define GPIO0 0
 #define GPIO2 2
 #define GPIO4 4
 
-//#define LEDID "3115"          //设备接口
-//#define LEDTOKEN "52e38a188"  //设备密码
-
 unsigned int httpPort = 8181;
 
 const char *host = "121.42.180.30";
 
-WiFiClient client;
+char  ServerAddr[] = "117.21.178.99";
+char StateTopicAddr[] = "v1/devices/me/telemetry";
+char ControllTopicAddr[] = "v1/devices/me/rpc/request/+";
+
+WiFiClient wifiClient;
+PubSubClient client(wifiClient);
 
 int status = WL_IDLE_STATUS;
+
+boolean gpioState[] = {false, false};
 
 long last_time = 0;
 
@@ -30,7 +39,6 @@ void setup()
   pinMode(GPIO4, OUTPUT);
   Serial.println("Connecting to AP ...");
   // attempt to connect to WiFi network
-
 
   WiFi.begin(ssid, pass);
 
@@ -51,9 +59,9 @@ void setup()
 
 void loop()
 {
-  while (!client.connected())//几个非连接的异常处理
+  while (!wifiClient.connected())//几个非连接的异常处理
   {
-    if (!client.connect(host, httpPort))
+    if (!wifiClient.connect(host, httpPort))
     {
       Serial.print("disconnect ");
       //client.stop();
@@ -62,15 +70,15 @@ void loop()
     else
     {
       Serial.print("chickin\n");
-      client.print("{\"M\":\"checkin\",\"ID\":\"3115\",\"K\":\"52e38a188\"}\r\n");
+      wifiClient.print("{\"M\":\"checkin\",\"ID\":\"3115\",\"K\":\"52e38a188\"}\r\n");
       delay(500);
     }
 
   }
-  while (client.available())//，无线读取到的数据转发到到串口
+  while (wifiClient.available())//，无线读取到的数据转发到到串口
   {
     toggle(GPIO4);
-    String s = client.readString();
+    String s = wifiClient.readString();
     String str = "";
     //    char a[100] = "";
     int count_f; //储存分离出来字符串
@@ -118,13 +126,14 @@ void loop()
   //    delay(500);
   //  }
 
-  if (millis() - last_time > 2000) {
+  if (millis() - last_time > 2000) 
+  {
     last_time = millis();
     String s = "{\"M\":\"update\",\"ID\":\"3115\",\"V\":{\"2948\":\"15.3\"}}\n";
-    client.print(s);
+    wifiClient.print(s);
     delay(1000);
     String t = "{\"M\":\"update\",\"ID\":\"3115\",\"V\":{\"2948\":\"30.5\"}}\n";
-    client.print(t);
+    wifiClient.print(t);
   }
 }
 

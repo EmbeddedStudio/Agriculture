@@ -59,8 +59,10 @@ void setup()
 }
 
 unsigned long lastSend = 0;
-void loop() {
-  if ( !client.connected() || !client2.connected()) {
+void loop() 
+{
+  if ( !client.connected() || !client2.connected()) 
+  {
     reconnect();
   }
   client2.loop();
@@ -134,12 +136,15 @@ void on_message(const char* topic, byte* payload, unsigned int length)
   // Check request method
   String methodName = String((const char*)data["method"]);
   Serial.println(methodName);
-  if (methodName.equals("getValue")) {
+  if (methodName.equals("getValue"))
+  {
     // Reply with GPIO status
     String responseTopic = String(topic);
     responseTopic.replace("request", "response");
     client.publish(responseTopic.c_str(), get_gpio_status().c_str());
-  } else if (methodName.equals("setValue")) {
+  }
+  else if (methodName.equals("setValue")) 
+  {
     // Update GPIO status and reply
     set_gpio_status(GPIO0_PIN, data["params"]); //data["params"]["pin"], data["params"]["enabled"]
     Serial.println("params:" + String((const char*)data["params"]));
@@ -150,7 +155,8 @@ void on_message(const char* topic, byte* payload, unsigned int length)
   }
 }
 
-String get_dht11_status() {
+String get_dht11_status() 
+{
   StaticJsonBuffer<200> jsonBuffer;
   JsonObject& data = jsonBuffer.createObject();
   data["temperature"] = String(dhtTem);
@@ -163,7 +169,8 @@ String get_dht11_status() {
   return strPayload;
 }
 
-String get_gpio_status() {
+String get_gpio_status() 
+{
   // Prepare gpios JSON payload string
   StaticJsonBuffer<200> jsonBuffer;
   JsonObject& data = jsonBuffer.createObject();
@@ -179,13 +186,17 @@ String get_gpio_status() {
   return strPayload;
 }
 
-void set_gpio_status(int pin, boolean enabled) {
-  if (pin == GPIO0_PIN) {
+void set_gpio_status(int pin, boolean enabled) 
+{
+  if (pin == GPIO0_PIN) 
+  {
     // Output GPIOs state
     digitalWrite(GPIO0, enabled ? HIGH : LOW);
     // Update GPIOs state
     gpioState[0] = enabled;
-  } else if (pin == GPIO2_PIN) {
+  }
+  else if (pin == GPIO2_PIN) 
+  {
     // Output GPIOs state
     digitalWrite(GPIO2, enabled ? HIGH : LOW);
     // Update GPIOs state
@@ -231,7 +242,8 @@ void reconnect()
     Serial.print("Connecting to Server node ...");
 
     // Attempt to connect (clientId, username, password)
-    if ( client.connect("a6aa0e70-a5f6-11e7-8d02-353f63eeab61", "MO3ZWweCvculYL83cPm7", NULL) && client2.connect(DHTID, DHTOKEN, NULL) ) {
+    if ( client.connect("a6aa0e70-a5f6-11e7-8d02-353f63eeab61", "MO3ZWweCvculYL83cPm7", NULL) && client2.connect(DHTID, DHTOKEN, NULL) ) 
+    {
       Serial.println( "[DONE]" );
       // Subscribing to recec
       client.subscribe(ControllTopicAddr);

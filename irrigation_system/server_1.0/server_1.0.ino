@@ -31,7 +31,6 @@ void setup()
   Serial.println("Connecting to AP ...");
   // attempt to connect to WiFi network
 
-
   WiFi.begin(ssid, pass);
 
   while (WiFi.status() != WL_CONNECTED)//WiFi.status() ，这个函数是wifi连接状态，返回wifi链接状态
@@ -65,14 +64,24 @@ void loop()
       client.print("{\"M\":\"checkin\",\"ID\":\"3115\",\"K\":\"52e38a188\"}\r\n");
       delay(500);
     }
-
   }
+  /*
+   * 在downcmd里面填写解析下发命令的代码
+   */
+   downcmd();
+  /*
+   *　在updata里面填写需要上传的代码
+   */
+  updata();
+}
+
+void downcmd()   //在downcmd里面填写解析下发命令的代码
+{
   while (client.available())//，无线读取到的数据转发到到串口
   {
     toggle(GPIO4);
     String s = client.readString();
     String str = "";
-    //    char a[100] = "";
     int count_f; //储存分离出来字符串
     int count_r; //储存分离出来字符串
     int num = 0; //储存云端下发的阀值
@@ -97,7 +106,7 @@ void loop()
 
       // Serial.println( s.substring(0, count_f)); //打印出第一个逗号位置的字符串
       str = s.substring(count_f + 5, count_r - 2); //打印字符串，从当前位置+5开始 得到不带引号的字符数字
-//      Serial.println(str);
+      //      Serial.println(str);
       char cstr[10] = "";
       for (int i = 0; i < 10; i++)
       {
@@ -109,16 +118,11 @@ void loop()
 
     delay(500);
   }
-  //  if (Serial.available())//串口读取到的转发到wifi，因为串口是一位一位的发送所以在这里缓存完再发送
-  //  {
-  //    size_t counti = Serial.available();
-  //    uint8_t sbuf[counti];
-  //    Serial.readBytes(sbuf, counti);
-  //    client.write(sbuf, counti);
-  //    delay(500);
-  //  }
+}
 
-  if (millis() - last_time > 2000) 
+void updata()   //在updata里面填写需要上传的代码
+{
+  if (millis() - last_time > 2000)
   {
     last_time = millis();
     String s = "{\"M\":\"update\",\"ID\":\"3115\",\"V\":{\"2948\":\"15.3\"}}\n";
@@ -128,6 +132,7 @@ void loop()
     client.print(t);
   }
 }
+
 
 void toggle(int GPIO)   //以灯的反转作为测试代码
 {

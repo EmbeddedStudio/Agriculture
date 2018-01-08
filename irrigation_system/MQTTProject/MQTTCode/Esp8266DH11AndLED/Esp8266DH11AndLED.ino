@@ -72,8 +72,10 @@ void loop()
 
 }
 
-void dht11Func() {
-  if (lastSend == 0 || millis() - lastSend >= 3000) {
+void dht11Func() 
+{
+  if (lastSend == 0 || millis() - lastSend >= 3000) 
+  {
     lastSend = millis();
     //   int chk = DHT11.read(DHTPIN);
 
@@ -146,7 +148,7 @@ void on_message(const char* topic, byte* payload, unsigned int length)
   else if (methodName.equals("setValue")) 
   {
     // Update GPIO status and reply
-    set_gpio_status(GPIO0_PIN, data["params"]); //data["params"]["pin"], data["params"]["enabled"]
+    set_gpio_status(GPIO2_PIN, data["params"]); //data["params"]["pin"], data["params"]["enabled"]
     Serial.println("params:" + String((const char*)data["params"]));
     String responseTopic = String(topic);
     responseTopic.replace("request", "response");
@@ -159,8 +161,10 @@ String get_dht11_status()
 {
   StaticJsonBuffer<200> jsonBuffer;
   JsonObject& data = jsonBuffer.createObject();
-  data["temperature"] = String(dhtTem);
-  data["humi"] = String(dhtHum);
+//  data["temperature"] = String(dhtTem);
+//  data["humi"] = String(dhtHum);
+data["temperature"] ="20";
+  data["humi"] = "30";
   char payload[256];
   data.printTo(payload, sizeof(payload));
   String strPayload = String(payload);

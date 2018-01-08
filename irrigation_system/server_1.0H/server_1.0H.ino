@@ -13,7 +13,7 @@ char pass[] = "dianxin132";
 #define GPIO2 2
 #define GPIO4 4
 
-unsigned int httpPort = 8181;
+unsigned int httpPort = 8181;     //贝壳物联服务器地址
 
 const char *host = "121.42.180.30";      //贝壳物联服务器地址
 
@@ -50,8 +50,6 @@ boolean gpioState[] = {false, false};
 
 long last_time = 0;
 
-float temp = 30.5;
-
 void setup()
 {
   Serial.begin(115200);
@@ -69,14 +67,14 @@ void setup()
     delay(500);
     Serial.print(".");
   }//如果没有连通向串口发送.....
-  client.setServer( ServerAddr, 1883 ); //链接服务器及端口
   Serial.println("");
   Serial.println("WiFi connected");
   Serial.println("IP address: ");
   Serial.println(WiFi.localIP());//WiFi.localIP()返回8266获得的ip地址
   Serial.println("mac address");
   Serial.println(WiFi.macAddress());
-  client.setCallback(message);
+  client.setServer( ServerAddr, 1883 );//链接服务器及端口
+  client.setCallback(on_message);
 }
 
 void loop()
@@ -100,50 +98,31 @@ void loop()
       client.connect( greenhouseID, greenhouseKEY , NULL);
       Serial.println("Connecting to Server node ...");
     }
+    Serial.println( "[DONE]" );
+    client.subscribe(ControllTopicAddr);
+    Serial.println("Sending current GPIO status ...");
   }
-  //  if ( client.connect( greenhouseID, greenhouseKEY , NULL) )
-  //  {
-  Serial.println( "[DONE]" );
-  client.subscribe(ControllTopicAddr);
-  Serial.println("Sending current GPIO status ...");
-  client.publish(StateTopicAddr, get_gpio_status().c_str());
-  client.publish(StateTopicAddr, getMotor1().c_str());
-  delay(3000);
-  //  }
-  //  else
-  //  {
-  //    Serial.print( "[FAILED] [ rc = " );
-  //    Serial.print( client.state() );
-  //    Serial.println( " : retrying in 5 seconds]" );
-  //    // Wait 5 seconds before retrying
-  //    delay( 5000 );
-  //  }
 
-}
-
-String getMotor1()
-{
-  StaticJsonBuffer<200> jsonBuffer;
-  JsonObject& data = jsonBuffer.createObject();
-  data["params"] = gpioState[0] ? true : false;
-  char payload[256];
-  data.printTo(payload, sizeof(payload));
-  String strPayload = String(payload);
-  Serial.print("Get Motor status: ");
-  Serial.println(strPayload);
-  return strPayload;
+  if (last_time == 0 || millis() - last_time >= 3000)
+  {
+    last_time = millis();
+    client.publish(StateTopicAddr, Data().c_str());
+  }
+  client.loop();
 }
 
 
-String get_gpio_status()
+
+
+String Data()
 {
   // Prepare gpios JSON payload string
   StaticJsonBuffer<200> jsonBuffer;
   JsonObject& data = jsonBuffer.createObject();
- // data["params"] = gpioState[0] ? true : false;
-  data["Illumination"] = "56.5";
+  //data["params"] = gpioState[0] ? true : false;
+  data["Illumination"] = "36.5";
   data["Temperature"] = "20.5";
-  data["Humidity"] = "20.6%";
+  data["Humidity"] = "20.6";
   data["CO2"] = "23.6";
   data["PH"] = "2.6";
   //data["temperature"] = String(dhtTem);
@@ -157,15 +136,26 @@ String get_gpio_status()
   return strPayload;
 }
 
-void setMotor1(int GPIO)
+String get_gpio_status()
 {
-  toggle(GPIO);
+  // Prepare gpios JSON payload string
+  StaticJsonBuffer<200> jsonBuffer;
+  JsonObject& data = jsonBuffer.createObject();
+  data["params"] = gpioState[0] ? true : false;
+  //data[String(GPIO2_PIN)] = gpioState[1] ? true : false;
+  char payload[256];
+  data.printTo(payload, sizeof(payload));
+  String strPayload = String(payload);
+  Serial.print("Get gpio status: ");
+  Serial.println(strPayload);
+  return strPayload;
 }
 
 void set_gpio_status(int pin, boolean enabled)
 {
   if (pin == GPIO0)
   {
+    Serial.println("set_gpio_status");
     // Output GPIOs state
     digitalWrite(GPIO0, enabled ? HIGH : LOW);
     // Update GPIOs state
@@ -194,16 +184,16 @@ void toggle(int GPIO)   //以灯的反转作为测试代码
   //  }
 }
 
-void message(const char* topic, byte* payload, unsigned int length)
+void on_message(const char* topic, byte* payload, unsigned int length)
 {
   char json[length + 1];
   strncpy (json, (char*)payload, length);
   json[length] = '\0';
 
-  Serial.print("Topic: ");
-  Serial.println(topic);
-  Serial.print("Message: ");
-  Serial.println(json);
+//  Serial.print("Topic: ");
+//  Serial.println(topic);
+//  Serial.print("Message: ");
+//  Serial.println(json);
 
   // Decode JSON request
   StaticJsonBuffer<200> jsonBuffer;
@@ -214,28 +204,29 @@ void message(const char* topic, byte* payload, unsigned int length)
     Serial.println("parseObject() failed");
     return;
   }
+
+  // Check request method
   String methodName = String((const char*)data["method"]);
   Serial.println(methodName);
-  if (methodName.equals("getValue"))
+  if (methodName.equals("getMotor1"))
   {
+
     // Reply with GPIO status
     String responseTopic = String(topic);
     responseTopic.replace("request", "response");
     client.publish(responseTopic.c_str(), get_gpio_status().c_str());
   }
-  else if (methodName.equals("setValue"))
+  else if (methodName.equals("setMotor1"))
   {
+    //toggle(GPIO2);
     // Update GPIO status and reply
-    set_gpio_status(GPIO4, data["params"]); //data["params"]["pin"], data["params"]["enabled"]
+    set_gpio_status(GPIO2, data["params"]); //data["params"]["pin"], data["params"]["enabled"]
     Serial.println("params:" + String((const char*)data["params"]));
     String responseTopic = String(topic);
     responseTopic.replace("request", "response");
     client.publish(responseTopic.c_str(), get_gpio_status().c_str());
     client.publish(StateTopicAddr, get_gpio_status().c_str());
   }
-
 }
-
-
 
 

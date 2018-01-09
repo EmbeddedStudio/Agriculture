@@ -16,8 +16,8 @@
 //#define  greenhouseKEY "i8j8gFS00lwaNzSOxrEe"
 
 #define GPIO0 0
-#define GPIO2 2
-#define DHTPIN 4
+#define GPIO2 4
+#define DHTPIN 2
 
 #define GPIO0_PIN 3
 #define GPIO2_PIN 5
@@ -161,10 +161,8 @@ String get_dht11_status()
 {
   StaticJsonBuffer<200> jsonBuffer;
   JsonObject& data = jsonBuffer.createObject();
-//  data["temperature"] = String(dhtTem);
-//  data["humi"] = String(dhtHum);
-data["temperature"] ="20";
-  data["humi"] = "30";
+  data["temperature"] = String(dhtTem);
+  data["humi"] = String(dhtHum);
   char payload[256];
   data.printTo(payload, sizeof(payload));
   String strPayload = String(payload);

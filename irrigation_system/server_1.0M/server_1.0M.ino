@@ -28,7 +28,9 @@ PubSubClient client(wifiClient);
 DHT dht(DHTPIN, DHTTYPE);
 
 float dhtHum = 0.0;
-float dhtTem = 0.0;
+float dhtTem = 0.0;  //温湿度
+
+float Value ;   //存储云端下发的阀值
 
 /*
    上传json关键字
@@ -115,6 +117,17 @@ void loop()
     dht11Func();
     client.publish(StateTopicAddr, Data().c_str());
   }
+//  if(dhtTem>Value)
+//  {
+//    digitalWrite(HydrovalvePin,HIGH);
+//    gpioState[HydrovalvePin]=true;
+//  }
+//  else
+//  {
+//    digitalWrite(HydrovalvePin,LOW);
+//    gpioState[HydrovalvePin]=false;
+//  }
+  
   client.loop();
 }
 
@@ -276,6 +289,8 @@ void on_message(const char* topic, byte* payload, unsigned int length)
   {
     // Update GPIO status and reply
     set_gpio_status(analogPin, data["params"]); //data["params"]["pin"], data["params"]["enabled"]
+    Value=float(data["params"]);
+    Serial.println("Value=data");
     Serial.println("params:" + String((const char*)data["params"]));
     String responseTopic = String(topic);
     responseTopic.replace("request", "response");

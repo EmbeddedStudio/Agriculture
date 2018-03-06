@@ -1,4 +1,5 @@
-服务器的地址　　117.21.178.99:8099
+服务器的地址　　117.21.178.99:8099 
+服务器的端口    1883
 
 登录名　285417644@qq.com
 密码 　  jxust001
@@ -11,3 +12,9 @@ DHT11
 端口号      8cb59020-a5f1-11e7-b8a4-353f63eeab61
 端口密码    wedsfsdfsdfddfeefedf
 
+实验室大棚系统
+端口号   8e27efe0-eb81-11e7-8341-353f63eeab61
+端口密码 i8j8gFS00lwaNzSOxrEe
+
+上传地址   StateTopicAddr[] = "v1/devices/me/telemetry";
+下发地址   ControllTopicAddr[] = "v1/devices/me/rpc/request/+";

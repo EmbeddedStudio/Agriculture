@@ -9,10 +9,10 @@ char pass[] = "dianxin132";
 #define  greenhouseID  "8e27efe0-eb81-11e7-8341-353f63eeab61"
 #define  greenhouseKEY "i8j8gFS00lwaNzSOxrEe"
 
-#define HydrovalvePin 0   //水阀开关引脚
-#define DHTPIN        2   //DHT输入引脚
-#define MotorPin      4   //风扇开关引脚
-#define analogPin     10  //模拟输出测试引脚
+#define HydrovalvePin 0   //水阀开关引脚   D3
+#define DHTPIN        2   //DHT输入引脚   D4
+#define MotorPin      4   //风扇开关引脚   D2
+#define analogPin     10  //模拟输出测试引脚  SD3
 
 //unsigned int httpPort = 8181;     //贝壳物联服务器地址
 //const char *host = "121.42.180.30";      //贝壳物联服务器地址

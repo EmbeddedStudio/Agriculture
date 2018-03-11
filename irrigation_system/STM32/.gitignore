@@ -1,0 +1,12 @@
+﻿# 这是 Git 的忽略文件
+
+# 忽略 listing 下所有文件
+/listing/*
+
+# 忽略 output 下所有文件
+/output/*
+
+# 忽略 project 目录下除 *.uvopt 和 *.uvproj 格式的其他文件
+/project/*
+!/project/*.uvoptx
+!/project/*.uvprojx

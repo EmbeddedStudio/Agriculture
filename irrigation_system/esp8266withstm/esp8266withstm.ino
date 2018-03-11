@@ -39,6 +39,7 @@ void loop() {
   while (Serial.available()) { // 来自stm32的数据
       String s = Serial.readString();
       client.publish(StateTopicAddr, s.c_str());
+      delay(100);
   }
   client.loop();
 }
@@ -64,7 +65,7 @@ void reconnect() {
       client.connect( greenhouseID, greenhouseKEY , NULL);
     }
     client.subscribe(ControllTopicAddr);//连接下发的地址
-    Serial.print("begin");  // 回应stm32已经连接服务器
+//    Serial.print("begin");  // 回应stm32已经连接服务器
   }
 }
 
@@ -83,5 +84,6 @@ void on_message(const char* topic, byte* payload, unsigned int length)
   }
   String methodName = String((const char*)data["method"]);
   String params = String((const char*)data["params"]);
-  Serial.println(methodName+"_"+params);
+  Serial.print(methodName+"_"+params+"_"+"*");
+  delay(100);
 }

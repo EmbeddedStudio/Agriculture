@@ -369,7 +369,7 @@
               <MiscControls></MiscControls>
               <Define>STM32F10X_HD, USE_STDPERIPH_DRIVER</Define>
               <Undefine></Undefine>
-              <IncludePath>..\startup;..\library\inc;..\user;..\driver\led;..\driver\systick;..\driver\usart;..\driver\Common;..\driver\dht11;..\driver\LED</IncludePath>
+              <IncludePath>..\startup;..\library\inc;..\user;..\driver\led;..\driver\systick;..\driver\usart;..\driver\dht11;..\driver\LED;..\driver\usart2;..\driver\TimBase</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
@@ -483,14 +483,24 @@
               <FilePath>..\driver\usart\bsp_usart.c</FilePath>
             </File>
             <File>
-              <FileName>Common.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\driver\Common\Common.c</FilePath>
-            </File>
-            <File>
               <FileName>bsp_dht11.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\driver\dht11\bsp_dht11.c</FilePath>
+            </File>
+            <File>
+              <FileName>bsp_usart2.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\driver\usart2\bsp_usart2.c</FilePath>
+            </File>
+            <File>
+              <FileName>bsp_led.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\driver\LED\bsp_led.c</FilePath>
+            </File>
+            <File>
+              <FileName>bsp_TiMbase.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\driver\TimBase\bsp_TiMbase.c</FilePath>
             </File>
           </Files>
         </Group>

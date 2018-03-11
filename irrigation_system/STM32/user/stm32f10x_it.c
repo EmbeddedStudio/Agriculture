@@ -1,24 +1,39 @@
 #include "stm32f10x_it.h"
 #include "bsp_usart.h"
 #include "bsp_usart2.h"
+#include <string.h>
+#include "bsp_led.h"
+#include "bsp_TiMbase.h" 
 
-u8 USart8266_temp[200]={0};
+char USart8266_temp[200];
+
 static u8 count = 0;
+
+u8 USART2_IT_Flag=0;
+u16 time=0;
+
 void USART2_IRQHandler ( void )
 { 
-//        char  ucTemp;
-
         if ( USART_GetITStatus ( USART2, USART_IT_RXNE ) != RESET )
         {
-                 
-                
                 USart8266_temp[count]  = USART_ReceiveData( USART2 );
                 count++;
+                if(USART_ReceiveData( USART2 ) == '*')
+                {
+                        count = 0;
+                        USART2_IT_Flag=1;
+                }
         }
-        count = 0;
-        printf("%s",USart8266_temp);
 }
 
+void  BASIC_TIM_IRQHandler (void)
+{
+        if ( TIM_GetITStatus( BASIC_TIM, TIM_IT_Update) != RESET ) 
+        { 
+                time++;
+                TIM_ClearITPendingBit(BASIC_TIM , TIM_FLAG_Update); 
+        } 
+}
 
 
 

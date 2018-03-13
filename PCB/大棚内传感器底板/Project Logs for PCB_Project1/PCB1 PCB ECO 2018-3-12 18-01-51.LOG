@@ -1,0 +1,15 @@
+Added Component: Designator=J?(KLD-0202)
+Added Pin To Net: NetName=NetJ?_1 Pin=J?-1
+Added Pin To Net: NetName=NetJ?_1 Pin=J?-1A
+Added Pin To Net: NetName=NetJ?_1 Pin=J?-1B
+Added Net: Name=NetJ?_1
+Added Pin To Net: NetName=NetJ?_2 Pin=J?-2
+Added Pin To Net: NetName=NetJ?_2 Pin=J?-2A
+Added Pin To Net: NetName=NetJ?_2 Pin=J?-2B
+Added Net: Name=NetJ?_2
+Added Pin To Net: NetName=NetJ?_3 Pin=J?-3
+Added Pin To Net: NetName=NetJ?_3 Pin=J?-3A
+Added Pin To Net: NetName=NetJ?_3 Pin=J?-3B
+Added Net: Name=NetJ?_3
+Added Class: Name=Sheet1
+Added Room: Name=Sheet1

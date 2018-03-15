@@ -1,0 +1,18 @@
+Component Name : RFID
+
+Part Count : 2
+
+Part : J?
+     Pins - (Normal) : 0
+          Hidden Pins : 
+
+Part : J?
+     Pins - (Normal) : 6
+          SDA            1              Passive
+          SCK            2              Passive
+          MOSI           3              Passive
+          MISO           4              Passive
+          IRQ            5              Passive
+          GND            6              Passive
+          Hidden Pins : 
+

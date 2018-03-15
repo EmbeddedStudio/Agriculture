@@ -1,0 +1,10 @@
+Added Component: Designator=U5(ESP8266)
+Added Pin To Net: NetName=3.3V Pin=U5-1
+Added Pin To Net: NetName=PB9 Pin=U5-2
+Added Pin To Net: NetName=PB8 Pin=U5-3
+Added Pin To Net: NetName=USART2_RX Pin=U5-4
+Added Pin To Net: NetName=USART2_TX Pin=U5-5
+Added Pin To Net: NetName=GND Pin=U5-8
+Added Member To Class: ClassName=Sheet2 Member=Component U5 ESP8266
+Added Room: Name=Sheet1
+Added Room: Name=Sheet2

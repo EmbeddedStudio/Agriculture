@@ -1,0 +1,22 @@
+Added Component: Designator=J?(PE2)
+Added Component: Designator=J?(PE)
+Added Pin To Net: NetName=PE0 Pin=J?-1
+Added Pin To Net: NetName=PE8 Pin=J?-1
+Added Pin To Net: NetName=PE1 Pin=J?-2
+Added Pin To Net: NetName=PE9 Pin=J?-2
+Added Pin To Net: NetName=PE2 Pin=J?-3
+Added Pin To Net: NetName=PE10 Pin=J?-3
+Added Pin To Net: NetName=PE3 Pin=J?-4
+Added Pin To Net: NetName=PE11 Pin=J?-4
+Added Pin To Net: NetName=PE4 Pin=J?-5
+Added Pin To Net: NetName=PE12 Pin=J?-5
+Added Pin To Net: NetName=PE5 Pin=J?-6
+Added Pin To Net: NetName=PE13 Pin=J?-6
+Added Pin To Net: NetName=PE6 Pin=J?-7
+Added Pin To Net: NetName=PE14 Pin=J?-7
+Added Pin To Net: NetName=PE7 Pin=J?-8
+Added Pin To Net: NetName=PE15 Pin=J?-8
+Added Pin To Net: NetName=GND Pin=R17-1
+Added Member To Class: ClassName=Sheet1 Member=Component J? PE2
+Added Room: Name=Sheet1
+Added Room: Name=Sheet2

@@ -21,6 +21,8 @@ int main(void)
         char *name=NULL;
         char *status=NULL;
         
+        u8 Temp_flag = 1 ;
+        
         NVIC_PriorityGroupConfig(NVIC_PriorityGroup_2);
         
         systick_init();
@@ -35,11 +37,33 @@ int main(void)
         while(1)
         {
                 
+                if(Temp_flag!=0)
+                {
+                        if( Temperature > temp_max )
+                        {
+                                         //关闭太阳灯并开启水阀进行降温
+                                TemDown_ON;
+                        }
+                        else if ( Temperature < ((temp_max+temp_min)/2) && Temperature > temp_min )
+                        {
+                                TemDown_OFF;
+                        }
+                        else if ( Temperature > ((temp_max+temp_min)/2) && Temperature < temp_max )
+                        {
+                                LED_OFF ;
+                        }
+                        else if ( Temperature < temp_min )
+                        {
+                                      //关闭水阀并开启太阳灯进行升温
+                                LED_ON;
+                        }
+                }
+                
                 if( time >= 2500 )    
                 {
-                        
                         time = 0 ;
                         
+                        /*装载 JSON 格式字符串*/
                         if( DHT11_Read_TempAndHumidity ( & DHT11_Data ) == SUCCESS)
                         {
                                 sprintf ( DataStr,"{\"Temperature\":\"%d.%d\",\"Humidity\":\"%d.%d\",\"CO2\":\"20.6\",\"PH\":\"5.6\",\"Illumination\":\"6.5\"}",\
@@ -49,6 +73,8 @@ int main(void)
                         
                         Usart2_SendString(USART2,DataStr);
                 }
+                
+                /* 解析串口接收的字符串  */
                 if( USART2_IT_Flag != 0 )
                 {
                         printf("receave %s",USart8266_temp);
@@ -64,20 +90,40 @@ int main(void)
                         }
                         if(! (strcmp("setMotor1", name) || strcmp("true", status) ) ) 
                         {
-                                LED1_ON;
+                                //LED1_ON;   //添加需要的代码
                         }
                         if(! (strcmp("setMotor1", name) || strcmp("false", status) ) ) 
                         {
-                                LED1_OFF;
+                                //LED1_OFF;  //添加需要的代码
                         }
                         if(! (strcmp("setHydrovalve1", name) || strcmp("true", status) ) ) 
                         {
-                                LED2_ON;
+                                //LED2_ON;  //添加需要的代码
                         }
                         if(! (strcmp("setHydrovalve1", name) || strcmp("false", status) ) ) 
                         {
-                                LED2_OFF;
+                                //LED2_OFF;   //添加需要的代码
                         }
+                        
+                        /*
+                         if()   //用户关闭升温系统
+                        {
+                                Temp_flag = 0 ;
+                        }
+                        if()   //用户开启升温系统
+                        {
+                                Temp_flag = 0 ;
+                        }
+                        if()   //接收来自云端设置的阈值
+                        {
+                                temp_max =  ;
+                        }
+                        if()    //接收来自云端设置的阈值
+                        {
+                                temp_min =  ;
+                        }
+                        
+                        */
                         USART2_IT_Flag=0;
                 }
         }

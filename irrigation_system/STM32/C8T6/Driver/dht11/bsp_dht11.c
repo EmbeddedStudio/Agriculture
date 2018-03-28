@@ -9,7 +9,9 @@ static void        DHT11_Mode_Out_PP  ( void );
 static uint8_t     DHT11_ReadByte     ( void );
 
 
-
+float  Temperature  =  0;
+float temp_max  =   23.2;
+float temp_min  =   21.2;
  /**
   * @brief  DHT11 初始化函数
   * @param  无
@@ -178,7 +180,7 @@ uint8_t DHT11_Read_TempAndHumidity(DHT11_Data_TypeDef *DHT11_Data)
 
                 DHT11_Data->check_sum= DHT11_ReadByte();
 
-
+                Temperature =  (float)DHT11_Data->temp_int +  ((float)DHT11_Data->temp_deci*0.1) ;
                 /*读取结束，引脚改为输出模式*/
                 DHT11_Mode_Out_PP();
                 /*主机拉高*/

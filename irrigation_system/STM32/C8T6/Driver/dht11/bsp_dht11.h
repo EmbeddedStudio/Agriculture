@@ -5,8 +5,10 @@
 
 #include "stm32f10x.h"
 
+extern float  Temperature ;
 
-
+extern float temp_max ;
+extern float temp_min ; 
 /************************** DHT11 数据类型定义********************************/
 typedef struct
 {

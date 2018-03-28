@@ -3,20 +3,19 @@
 
 #include "stm32f10x.h"
 
-#define LED1_GPIO_PORT          GPIOB                   /* GPIO端口 */
-#define LED1_GPIO_CLK           RCC_APB2Periph_GPIOB        /* GPIO端口时钟 */
-#define LED1_GPIO_PIN           GPIO_Pin_5              /* 连接到SCL时钟线的GPIO */
+#define Water_GPIO_PORT          GPIOB                   /* GPIO端口 */
+#define Water_GPIO_CLK           RCC_APB2Periph_GPIOB        /* GPIO端口时钟 */
+#define Water_GPIO_PIN           GPIO_Pin_12              /* 连接到SCL时钟线的GPIO */
 
 // G-绿色
-#define LED2_GPIO_PORT          GPIOB                   /* GPIO端口 */
-#define LED2_GPIO_CLK           RCC_APB2Periph_GPIOB        /* GPIO端口时钟 */
-#define LED2_GPIO_PIN           GPIO_Pin_0              /* 连接到SCL时钟线的GPIO */
+#define TemDown_GPIO_PORT          GPIOB                   /* GPIO端口 */
+#define TemDown_GPIO_CLK           RCC_APB2Periph_GPIOB        /* GPIO端口时钟 */
+#define TemDown_GPIO_PIN           GPIO_Pin_13              /* 连接到SCL时钟线的GPIO */
 
 // B-蓝色
-#define LED3_GPIO_PORT          GPIOB                   /* GPIO端口 */
-#define LED3_GPIO_CLK           RCC_APB2Periph_GPIOB        /* GPIO端口时钟 */
-#define LED3_GPIO_PIN           GPIO_Pin_1              /* 连接到SCL时钟线的GPIO */
-
+#define LED_GPIO_PORT          GPIOB                   /* GPIO端口 */
+#define LED_GPIO_CLK           RCC_APB2Periph_GPIOB        /* GPIO端口时钟 */
+#define LED_GPIO_PIN           GPIO_Pin_14              /* 连接到SCL时钟线的GPIO */
 
 /** the macro definition to trigger the led on or off 
   * 1 - off
@@ -26,17 +25,17 @@
 #define OFF 1
 
 /* 使用标准的固件库控制IO*/
-#define LED1(a) if (a)  \
+#define Water(a) if (a)  \
                                 GPIO_SetBits(LED1_GPIO_PORT,LED1_GPIO_PIN);\
                                 else    \
                                 GPIO_ResetBits(LED1_GPIO_PORT,LED1_GPIO_PIN)
 
-#define LED2(a) if (a)  \
+#define TemDown(a) if (a)  \
                                 GPIO_SetBits(LED2_GPIO_PORT,LED2_GPIO_PIN);\
                                 else            \
                                 GPIO_ResetBits(LED2_GPIO_PORT,LED2_GPIO_PIN)
 
-#define LED3(a) if (a) \
+#define LED(a) if (a) \
                                 GPIO_SetBits(LED3_GPIO_PORT,LED3_GPIO_PIN);\
                                 else     \
                                 GPIO_ResetBits(LED3_GPIO_PORT,LED3_GPIO_PIN)
@@ -49,17 +48,17 @@
 
 
 /* 定义控制IO的宏 */
-#define LED1_TOGGLE     digitalToggle(LED1_GPIO_PORT,LED1_GPIO_PIN)
-#define LED1_OFF        digitalHi(LED1_GPIO_PORT,LED1_GPIO_PIN)
-#define LED1_ON         digitalLo(LED1_GPIO_PORT,LED1_GPIO_PIN)
+#define Water_TOGGLE      digitalToggle(Water_GPIO_PORT,Water_GPIO_PIN)
+#define Water_ON          digitalHi(Water_GPIO_PORT,Water_GPIO_PIN)
+#define Water_OFF         digitalLo(Water_GPIO_PORT,Water_GPIO_PIN)
+ 
+#define TemDown_TOGGLE    digitalToggle(TemDown_GPIO_PORT,TemDown_GPIO_PIN)
+#define TemDown_ON        digitalHi(TemDown_GPIO_PORT,TemDown_GPIO_PIN)
+#define TemDown_OFF       digitalLo(TemDown_GPIO_PORT,TemDown_GPIO_PIN)
 
-#define LED2_TOGGLE     digitalToggle(LED2_GPIO_PORT,LED2_GPIO_PIN)
-#define LED2_OFF        digitalHi(LED2_GPIO_PORT,LED2_GPIO_PIN)
-#define LED2_ON         digitalLo(LED2_GPIO_PORT,LED2_GPIO_PIN)
-
-#define LED3_TOGGLE     digitalToggle(LED3_GPIO_PORT,LED3_GPIO_PIN)
-#define LED3_OFF        digitalHi(LED3_GPIO_PORT,LED3_GPIO_PIN)
-#define LED3_ON         digitalLo(LED3_GPIO_PORT,LED3_GPIO_PIN)
+#define LED_TOGGLE        digitalToggle(LED_GPIO_PORT,LED_GPIO_PIN)
+#define LED_ON            digitalHi(LED_GPIO_PORT,LED_GPIO_PIN)
+#define LED_OFF           digitalLo(LED_GPIO_PORT,LED_GPIO_PIN)
 
 /* 基本混色，后面高级用法使用PWM可混出全彩颜色,且效果更好 */
 

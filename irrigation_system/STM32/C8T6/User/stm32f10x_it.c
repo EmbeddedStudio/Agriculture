@@ -10,6 +10,7 @@ char USart8266_temp[200];
 static u8 count = 0;
 
 u8 USART2_IT_Flag=0;
+u8 Time_Flag=0;
 u16 time=0;
 
 void USART2_IRQHandler ( void )
@@ -31,6 +32,11 @@ void  BASIC_TIM_IRQHandler (void)
         if ( TIM_GetITStatus( BASIC_TIM, TIM_IT_Update) != RESET ) 
         { 
                 time++;
+                if(time>=2500)
+                {
+                        time=0;
+                        Time_Flag=1;
+                }
                 TIM_ClearITPendingBit(BASIC_TIM , TIM_FLAG_Update); 
         } 
 }

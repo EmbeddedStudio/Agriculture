@@ -369,7 +369,7 @@
               <MiscControls></MiscControls>
               <Define>STM32F10X_MD, USE_STDPERIPH_DRIVER</Define>
               <Undefine></Undefine>
-              <IncludePath>..\Startup;..\Libiary\inc;..\Driver\systick;..\Driver\usart;..\User;..\Driver\dht11;..\Driver\GeneralTim;..\Driver\LED;..\Driver\TimBase;..\Driver\usart2</IncludePath>
+              <IncludePath>..\Startup;..\Libiary\inc;..\Driver\systick;..\Driver\usart;..\User;..\Driver\dht11;..\Driver\GeneralTim;..\Driver\LED;..\Driver\TimBase;..\Driver\usart2;..\Driver\i2c;..\Driver\tsl2561;..\Driver\OLED</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
@@ -499,6 +499,26 @@
               <FileName>bsp_usart2.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\Driver\usart2\bsp_usart2.c</FilePath>
+            </File>
+            <File>
+              <FileName>bsp_i2c.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Driver\i2c\bsp_i2c.c</FilePath>
+            </File>
+            <File>
+              <FileName>bsp_OLED.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Driver\OLED\bsp_OLED.c</FilePath>
+            </File>
+            <File>
+              <FileName>bsp_tsl2561.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Driver\tsl2561\bsp_tsl2561.c</FilePath>
+            </File>
+            <File>
+              <FileName>codetab.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Driver\OLED\codetab.c</FilePath>
             </File>
           </Files>
         </Group>

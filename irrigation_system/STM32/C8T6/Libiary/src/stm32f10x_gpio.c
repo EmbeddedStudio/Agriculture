@@ -370,7 +370,7 @@ void GPIO_SetBits(GPIO_TypeDef* GPIOx, uint16_t GPIO_Pin)
   * @brief  Clears the selected data port bits.
   * @param  GPIOx: where x can be (A..G) to select the GPIO peripheral.
   * @param  GPIO_Pin: specifies the port bits to be written.
-  *   This parameter can be any combination of GPIO_Pin_x where x can be (0..15).
+  *              This parameter can be any combination of GPIO_Pin_x where x can be (0..15).
   * @retval None
   */
 void GPIO_ResetBits(GPIO_TypeDef* GPIOx, uint16_t GPIO_Pin)
@@ -428,7 +428,7 @@ void GPIO_Write(GPIO_TypeDef* GPIOx, uint16_t PortVal)
   * @brief  Locks GPIO Pins configuration registers.
   * @param  GPIOx: where x can be (A..G) to select the GPIO peripheral.
   * @param  GPIO_Pin: specifies the port bit to be written.
-  *   This parameter can be any combination of GPIO_Pin_x where x can be (0..15).
+  *             This parameter can be any combination of GPIO_Pin_x where x can be (0..15).
   * @retval None
   */
 void GPIO_PinLockConfig(GPIO_TypeDef* GPIOx, uint16_t GPIO_Pin)

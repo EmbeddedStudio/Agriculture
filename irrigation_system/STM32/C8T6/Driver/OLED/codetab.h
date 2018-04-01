@@ -15,6 +15,8 @@ extern unsigned char  Air_Temp[] ;
 extern unsigned char Close[];
 extern unsigned char Open[];
 extern unsigned char System[];
+extern unsigned char successful[];
+extern unsigned char fail[];
 
 #endif /*__CODETAB_H*/
 

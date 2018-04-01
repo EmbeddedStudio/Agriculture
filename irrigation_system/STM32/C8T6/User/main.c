@@ -11,7 +11,8 @@
 #include "bsp_tsl2561.h"
 #include "stm32f10x_it.h"
 #include "codetab.h"
-#include "stdlib.h"
+#include "bsp_spi.h"
+#include "bsp_rc522.h"
 
 extern u8 USart8266_temp[200];
 extern u8 USART2_IT_Flag;
@@ -21,6 +22,7 @@ void  Temperature_System(void);
 void Network_System(void);
 void Receave_System(void);
 void System_Init(void);
+void RFID ( void );
 
 char DataStr [ 500 ] = { 0 };
 
@@ -36,6 +38,7 @@ int main(void)
         
         while(1)
         {
+                RFID();
                 if(Temp_flag!=0)
                 {
                         Temperature_System();   //调用恒温系统执行函数
@@ -222,10 +225,50 @@ void System_Init(void)
         I2C_init();
         OLED_Init();
         TSL2561_Init();
+        spi_Init();
+        RC522_Init();
 }
 
 
 
+void RFID ( void )
+{
+        char cStr [ 30 ];
+        u8 Array_ID [ 4 ];                  //先后存放IC卡的类型和UID(IC卡序列号)
+        u8 Status,s_flag=0,f_flag=0;   //定义刷卡成功失败的标志位        //返回状态
+        
+        if ( ( Status = PcdRequest ( PICC_REQALL, Array_ID ) ) == MI_OK )                                    //寻卡
+        {       
+                s_flag=1;
+                Status=PcdAnticoll(Array_ID);
+                
+        }
+        if ( Status == MI_OK  )
+        {
+                f_flag=1;
+               Status=MI_ERR;
+                sprintf ( cStr, "The Card ID is: %02X%02X%02X%02X", Array_ID [ 0 ], Array_ID [ 1 ], Array_ID [ 2 ], Array_ID [ 3 ] );
+                printf ( "%s\r\n",cStr );
+//                OLED_Fill(0x00);
+//                OLED_ShowCN(48,3,2,successful);
+        }
+        if(s_flag!=0)
+        {
+                if(f_flag!=0)
+                {
+                        OLED_Fill(0x00);
+                        OLED_ShowCN(48,3,2,successful);
+                }
+                else
+                {
+                        OLED_Fill(0x00);
+                        OLED_ShowCN(48,3,2,fail);
+                }
+                
+                s_flag=0;
+        }
+        
+}
 
 
 

@@ -2,39 +2,6 @@
 #include "bsp_usart.h"
 #include "bsp_systick.h"
 
-//static void GPIO_SPI_Config (void)
-//{
-//        GPIO_InitTypeDef  GPIO_InitStruct;      //配置连接到的GPIO
-
-//        FLASH_SPI_CS_APBxClock_FUN (FLASH_SPI_CS_CLK,ENABLE);
-//        FLASH_SPI_SCK_APBxClock_FUN(FLASH_SPI_SCK_CLK,ENABLE);
-//        FLASH_SPI_APBxClock_FUN(FLASH_SPI_CLK,ENABLE);
-
-//        /*MISO MOSI  SCK*/
-//        GPIO_InitStruct.GPIO_Mode = GPIO_Mode_IN_FLOATING;
-//        GPIO_InitStruct.GPIO_Pin = FLASH_SPI_MISO_PIN;
-//        GPIO_InitStruct.GPIO_Speed = GPIO_Speed_50MHz;
-//        GPIO_Init(FLASH_SPI_MISO_PORT,&GPIO_InitStruct);
-
-//        GPIO_InitStruct.GPIO_Mode = GPIO_Mode_AF_PP;
-//        GPIO_InitStruct.GPIO_Pin = FLASH_SPI_MOSI_PIN;
-//        GPIO_InitStruct.GPIO_Speed = GPIO_Speed_50MHz;
-//        GPIO_Init(FLASH_SPI_MOSI_PORT,&GPIO_InitStruct);
-
-//        GPIO_InitStruct.GPIO_Mode = GPIO_Mode_AF_PP;
-//        GPIO_InitStruct.GPIO_Pin = FLASH_SPI_SCK_PIN;
-//        GPIO_InitStruct.GPIO_Speed = GPIO_Speed_50MHz;
-//        GPIO_Init(FLASH_SPI_SCK_PORT,&GPIO_InitStruct);
-
-//        //配置CS片选引脚
-//        GPIO_InitStruct.GPIO_Mode = GPIO_Mode_Out_PP;
-//        GPIO_InitStruct.GPIO_Pin = FLASH_SPI_CS_PIN;
-//        GPIO_InitStruct.GPIO_Speed = GPIO_Speed_50MHz;
-//        GPIO_Init(FLASH_SPI_CS_PORT,&GPIO_InitStruct);
-// 
-//        SPI_FLASH_CS_HIGH();
-//}
-
 
 void spi_Init(void)
 {
@@ -132,4 +99,44 @@ u8 SPI_ReadByte(void)
 //{
 //        return SPI_SentByte(DUMMY);
 //}
+
+void SPI_SetSpeed1(u8 SpeedSet)
+{
+        SPI_InitTypeDef SPI_InitStruct;
+        
+        SPI_InitStruct.SPI_CPHA = SPI_CPHA_1Edge;//串行同步时钟的第一个跳变沿（上升或下降）数据被采样
+        SPI_InitStruct.SPI_CPOL = SPI_CPOL_Low;  //串行同步时钟的空闲状态为低电平
+        SPI_InitStruct.SPI_CRCPolynomial=7;     //CRC值计算的多项式
+        SPI_InitStruct.SPI_DataSize = SPI_DataSize_8b;  //设置SPI的数据大小:SPI发送接收8位帧结构
+        SPI_InitStruct.SPI_Direction = SPI_Direction_2Lines_FullDuplex;  //设置SPI单向或者双向的数据模式:SPI设置为双线双向全双工
+        SPI_InitStruct.SPI_FirstBit =  SPI_FirstBit_MSB  ;//指定数据传输从MSB位还是LSB位开始:数据传输从MSB位开始
+        SPI_InitStruct.SPI_Mode = SPI_Mode_Master ;//设置SPI工作模式:设置为主SPI
+        SPI_InitStruct.SPI_NSS = SPI_NSS_Soft;  //NSS信号由硬件（NSS管脚）还是软件（使用SSI位）管理:内部NSS信号有SSI位控制
+        
+        switch(SpeedSet)
+        {
+                case SPI_SPEED_2:
+                        SPI_InitStruct.SPI_BaudRatePrescaler = SPI_BaudRatePrescaler_2;
+                break ;
+                case SPI_SPEED_4:
+                        SPI_InitStruct.SPI_BaudRatePrescaler = SPI_BaudRatePrescaler_4;
+                break ;
+                case SPI_SPEED_8:
+                        SPI_InitStruct.SPI_BaudRatePrescaler = SPI_BaudRatePrescaler_8;
+                break ;
+                case SPI_SPEED_16:
+                        SPI_InitStruct.SPI_BaudRatePrescaler = SPI_BaudRatePrescaler_16;
+                break ;
+                case SPI_SPEED_256:
+                        SPI_InitStruct.SPI_BaudRatePrescaler = SPI_BaudRatePrescaler_256;
+                break ;
+                
+                
+        }
+       
+        SPI_Init(SPI1, &SPI_InitStruct);
+        SPI_Cmd(SPI1, ENABLE);
+}
+
+
 

@@ -1,4 +1,3 @@
-
 #include "bsp_GeneralTim.h" 
 
 static void GENERAL_TIM_GPIO_Config(void) 
@@ -6,11 +5,11 @@ static void GENERAL_TIM_GPIO_Config(void)
         GPIO_InitTypeDef GPIO_InitStructure;
 
         // 输出比较通道1 GPIO 初始化
-        RCC_APB2PeriphClockCmd(GENERAL_TIM_CH1_GPIO_CLK, ENABLE);
-        GPIO_InitStructure.GPIO_Pin =  GENERAL_TIM_CH1_PIN;
+        RCC_APB2PeriphClockCmd(GENERAL_TIM_CH3_GPIO_CLK, ENABLE);
+        GPIO_InitStructure.GPIO_Pin =  GENERAL_TIM_CH3_PIN|GENERAL_TIM_CH4_PIN;
         GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF_PP;
         GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
-        GPIO_Init(GENERAL_TIM_CH1_PORT, &GPIO_InitStructure);
+        GPIO_Init(GENERAL_TIM_CH3_PORT, &GPIO_InitStructure);
         
 }
 
@@ -21,7 +20,7 @@ static void GENERAL_TIM_GPIO_Config(void)
 // *-----------------------------------------------------------------------------
 // *typedef struct
 // *{ TIM_Prescaler            都有
-// *	TIM_CounterMode			     TIMx,x[6,7]没有，其他都有
+// *    TIM_CounterMode         TIMx,x[6,7]没有，其他都有
 // *  TIM_Period               都有
 // *  TIM_ClockDivision        TIMx,x[6,7]没有，其他都有
 // *  TIM_RepetitionCounter    TIMx,x[1,8,15,16,17]才有
@@ -31,8 +30,8 @@ static void GENERAL_TIM_GPIO_Config(void)
 
 /* ----------------   PWM信号 周期和占空比的计算--------------- */
 // ARR ：自动重装载寄存器的值
-// CLK_cnt：计数器的时钟，等于 Fck_int / (psc+1) = 72M/(psc+1)
-// PWM 信号的周期 T = ARR * (1/CLK_cnt) = ARR*(PSC+1) / 72M
+// CLK_cnt：计数器的时钟，等于 Fck_int / (TIM_Period+1) = 72M/(TIM_Period+1)
+// PWM 信号的周期 T = ARR * (1/CLK_cnt) = ARR*(TIM_Period+1) / 72M
 // 占空比P=CCR/(ARR+1)
 
 static void GENERAL_TIM_Mode_Config(void)
@@ -57,21 +56,31 @@ static void GENERAL_TIM_Mode_Config(void)
         // 初始化定时器
         TIM_TimeBaseInit(GENERAL_TIM, &TIM_TimeBaseStructure);
 
+        u16 CCR3_Val = 0;
+        u16 CCR4_Val = 0;
+        
         /*--------------------输出比较结构体初始化-------------------*/	
 
         TIM_OCInitTypeDef  TIM_OCInitStructure;
-        // 配置为PWM模式1
+        // 配置为PWM模式1 此模式下当计数值小于CCR时输出高电平大于输出低电平
         TIM_OCInitStructure.TIM_OCMode = TIM_OCMode_PWM1;
         // 输出使能
         TIM_OCInitStructure.TIM_OutputState = TIM_OutputState_Enable;
-        // 输出通道电平极性配置	
+        // 输出通道电平极性配置 
         TIM_OCInitStructure.TIM_OCPolarity = TIM_OCPolarity_High;
 
-        // 输出比较通道 1
-        TIM_OCInitStructure.TIM_Pulse = 0;
-        TIM_OC1Init(GENERAL_TIM, &TIM_OCInitStructure);
-        TIM_OC1PreloadConfig(GENERAL_TIM, TIM_OCPreload_Enable);
+        //设置跳变值，当计数器计数到这个值时，电平发生跳变
+        TIM_OCInitStructure.TIM_Pulse = CCR3_Val;  
+        //当定时器计数值小于CCR3_Val时为高电平
+        TIM_OC3Init(GENERAL_TIM, &TIM_OCInitStructure);
+        TIM_OC3PreloadConfig(GENERAL_TIM, TIM_OCPreload_Enable);
 
+        TIM_OCInitStructure.TIM_OutputState = TIM_OutputState_Enable;
+        TIM_OCInitStructure.TIM_Pulse = CCR4_Val;  
+        //当定时器计数值小于CCR3_Val时为高电平
+        TIM_OC4Init(GENERAL_TIM, &TIM_OCInitStructure);
+        TIM_OC4PreloadConfig(GENERAL_TIM, TIM_OCPreload_Enable);
+        
         // 使能计数器
         TIM_Cmd(GENERAL_TIM, ENABLE);
 }
@@ -82,4 +91,7 @@ void GENERAL_TIM_Init(void)
         GENERAL_TIM_Mode_Config(); 
 }
 
+
+
+//控制CCR的值就可以控制舵机的位置  范围为5-25
 /*********************************************END OF FILE**********************/

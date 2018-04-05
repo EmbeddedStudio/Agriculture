@@ -13,12 +13,15 @@
 #include "codetab.h"
 #include "bsp_spi.h"
 #include "bsp_rc522.h"
+#include "bsp_GeneralTim.h" 
+#include "bsp_adc.h"
+
 
 extern u8 USart8266_temp[200];
 extern u8 USART2_IT_Flag;
 extern u8 Time_Flag;
 
-void  Temperature_System(void);
+void Temperature_System(void);
 void Network_System(void);
 void Receave_System(void);
 void System_Init(void);
@@ -30,15 +33,18 @@ u8 Temp_flag = 1 ;
 u8 Show_flag = 0;
 u8 Irrigation_flag=0;   //喷灌标志
 u8 Exhaust_flag=0;      //排风标志
+
+
+
 int main(void)
 {
-        
         System_Init();
         printf("[%s][%d]\r\n", __func__, __LINE__);
-        
         while(1)
         {
                 RFID();
+                
+                delay_ms(500);
                 if(Temp_flag!=0)
                 {
                         Temperature_System();   //调用恒温系统执行函数
@@ -222,10 +228,12 @@ void System_Init(void)
         USART_Config();
         LED_GPIO_Config();
         BASIC_TIM_Init();
+        GENERAL_TIM_Init();
         I2C_init();
         OLED_Init();
         TSL2561_Init();
         spi_Init();
+        ADC1_Init();
         RC522_Init();
 }
 

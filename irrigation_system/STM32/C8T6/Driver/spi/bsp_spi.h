@@ -40,12 +40,17 @@
 #define      SPI_CS2_LOW()                    GPIO_ResetBits(  SPI_CS2_PORT, SPI_CS2_PIN )
 #define      SPI_CS2_HIGH()                   GPIO_SetBits(  SPI_CS2_PORT, SPI_CS2_PIN )
 
-
+// SPI总线速度设置 
+#define SPI_SPEED_2   0
+#define SPI_SPEED_4   1
+#define SPI_SPEED_8   2
+#define SPI_SPEED_16  3
+#define SPI_SPEED_256 4
 
 /******************函数声明******************/ 
 void spi_Init(void);
 u8 SPI_SentByte(uint8_t data);
 u8 SPI_ReadByte(void);
-
+void SPI_SetSpeed1(u8 SpeedSet);
 
 #endif  /*__BSP_SPI_H*/

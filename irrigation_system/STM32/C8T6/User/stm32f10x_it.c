@@ -4,6 +4,7 @@
 #include <string.h>
 #include "bsp_led.h"
 #include "bsp_TiMbase.h" 
+#include "bsp_adc.h"
 
 char USart8266_temp[200];
 
@@ -41,7 +42,15 @@ void  BASIC_TIM_IRQHandler (void)
         } 
 }
 
-
+void ADC_IRQHandler(void)
+{ 
+        if (ADC_GetITStatus(ADCx,ADC_IT_EOC)==SET) 
+        {
+                // 读取ADC的转换值
+                ADC_ConvertedValue = ADC_GetConversionValue(ADCx);
+        }
+        ADC_ClearITPendingBit(ADCx,ADC_IT_EOC);
+}
 
 
 

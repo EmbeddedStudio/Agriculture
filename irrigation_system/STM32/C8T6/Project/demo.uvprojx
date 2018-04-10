@@ -470,6 +470,11 @@
               <FileType>1</FileType>
               <FilePath>..\Libiary\src\stm32f10x_adc.c</FilePath>
             </File>
+            <File>
+              <FileName>stm32f10x_flash.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Libiary\src\stm32f10x_flash.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
@@ -544,11 +549,6 @@
               <FileName>bsp_adc.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\Driver\adc\bsp_adc.c</FilePath>
-            </File>
-            <File>
-              <FileName>bsp_SD.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\Driver\SD\bsp_SD.c</FilePath>
             </File>
           </Files>
         </Group>

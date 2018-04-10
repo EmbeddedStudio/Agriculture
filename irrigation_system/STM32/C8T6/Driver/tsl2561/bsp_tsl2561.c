@@ -85,7 +85,7 @@ float Read_Light(void )
                 lx=0;  
         }  
         
-        return lx;
+        return lx*4*3.14;
 } 
 
 

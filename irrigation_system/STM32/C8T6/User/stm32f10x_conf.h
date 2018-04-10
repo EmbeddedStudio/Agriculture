@@ -55,6 +55,7 @@
 #include "stm32f10x_gpio.h"
 #include "stm32f10x_spi.h" 
 #include "stm32f10x_adc.h" 
+#include "stm32f10x_flash.h"
 
 /* Exported types ------------------------------------------------------------*/
 /* Exported constants --------------------------------------------------------*/

@@ -1,18 +1,20 @@
 #include "stm32f10x_it.h"
-#include "bsp_usart.h"
-#include "bsp_usart2.h"
-#include <string.h>
-#include "bsp_led.h"
-#include "bsp_TiMbase.h" 
-#include "bsp_adc.h"
+#include "main.h"
 
-char USart8266_temp[200];
+u8  USart8266_temp[200];
+
+u8 Humi_int =0 ; 
+u8 Humi_deci=0 ;
+u8 Temp_int =0 ; 
+u8 Temp_deci=0 ;
+
+
+
 
 static u8 count = 0;
-
-u8 USART2_IT_Flag=0;
 u8 Time_Flag=0;
 u16 time=0;
+u16 time_mode=0;
 
 void USART2_IRQHandler ( void )
 { 
@@ -23,7 +25,7 @@ void USART2_IRQHandler ( void )
                 if(USART_ReceiveData( USART2 ) == '*')
                 {
                         count = 0;
-                        USART2_IT_Flag=1;
+                        Down_Control();
                 }
         }
 }
@@ -33,11 +35,21 @@ void  BASIC_TIM_IRQHandler (void)
         if ( TIM_GetITStatus( BASIC_TIM, TIM_IT_Update) != RESET ) 
         { 
                 time++;
-                if(time>=2500)
+                if(time>=2500)           //定时2.5秒上传一次数据
                 {
                         time=0;
-                        Time_Flag=1;
+                        Updata();
                 }
+                if(Mode==Entering_Mode) //一分钟退出管理员录入模式
+                {
+                        time_mode++;
+                        if(time_mode>=60000)
+                        {
+                                time_mode=0;
+                                Mode=General_Mode;
+                        }
+                }
+                
                 TIM_ClearITPendingBit(BASIC_TIM , TIM_FLAG_Update); 
         } 
 }
@@ -51,6 +63,108 @@ void ADC_IRQHandler(void)
         }
         ADC_ClearITPendingBit(ADCx,ADC_IT_EOC);
 }
+
+
+void Updata (void)
+{
+        DHT11_Data_TypeDef   DHT11_Data;
+        char DataStr [ 500 ]  ;
+        
+        
+        Illumination=Read_Light();
+        
+        if( DHT11_Read_TempAndHumidity ( & DHT11_Data ) == SUCCESS)
+        {
+                Temp_int=DHT11_Data.temp_int;
+                Temp_deci=DHT11_Data.temp_deci;
+                Humi_int=DHT11_Data.humi_int;
+                Humi_deci=DHT11_Data.humi_deci;
+//                sprintf ( DataStr,"{\"Temperature\":\"%d.%d\",\"Humidity\":\"%d.%d\",\"Illumination\":\"%0.2f\"}",\
+//                DHT11_Data.temp_int,DHT11_Data.temp_deci,DHT11_Data.humi_int,DHT11_Data.humi_deci,Illumination);
+        }
+        sprintf ( DataStr,"{\"Temperature\":\"%d.%d\",\"Humidity\":\"%d.%d\",\"Illumination\":\"%0.2f\"}",\
+                Temp_int,Temp_deci,Humi_int,Humi_deci,Illumination);
+        printf("%s\r\n",DataStr);
+        Usart2_SendString(USART2,DataStr);
+}
+
+
+void Down_Control(void)
+{
+        
+        char *p;
+        char *name=NULL;
+        char *status=NULL;
+        
+        printf("receave %s",USart8266_temp);
+        p = strtok((char*)USart8266_temp, "_");
+        if(p)
+        {
+                name = p;
+        }
+        p = strtok(NULL, "_");
+        if(p)
+        {
+                status = p;
+        }
+        if(! (strcmp("setMotor1", name) || strcmp("true", status) ) ) 
+        {
+                //LED1_ON;   //添加需要的代码
+                //Exhaust_flag=1;
+        }
+        if(! (strcmp("setMotor1", name) || strcmp("false", status) ) ) 
+        {
+                //Water_OFF;  //添加需要的代码
+                //Exhaust_flag=0;
+        }
+        if(! (strcmp("setHydrovalve1", name) || strcmp("true", status) ) ) 
+        {
+                Water_ON;  //添加需要的代码
+                Irrigation_flag=1;
+        }
+        if(! (strcmp("setHydrovalve1", name) || strcmp("false", status) ) ) 
+        {
+                Water_OFF;   //添加需要的代码
+                Irrigation_flag=0;
+        }
+        
+        /*
+         if()   //用户关闭升温系统
+        {
+                Temp_flag = 0 ;
+        }
+        if()   //用户开启升温系统
+        {
+                Temp_flag = 1 ;
+        }
+        if()   //接收来自云端设置的阈值
+        {
+                temp_max =  ;
+        }
+        if()    //接收来自云端设置的阈值
+        {
+                temp_min =  ;
+        }
+        
+        */
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

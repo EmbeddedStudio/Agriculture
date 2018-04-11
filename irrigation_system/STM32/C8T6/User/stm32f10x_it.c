@@ -128,7 +128,7 @@ void Down_Control(void)
                 Irrigation_flag=0;
         }
         
-        /*
+        /*              //用户决定是否关闭开启温控系统并设置阈值
          if()   //用户关闭升温系统
         {
                 Temp_flag = 0 ;

@@ -15,7 +15,7 @@ char lighting[10];
 u32 ID_Card[256];                       //用于存储录入的卡号
 
 u8 Mode;
-
+u8 Door_Flag=0;
 
 
 
@@ -27,6 +27,7 @@ int main(void)
         /*************************局部变量的定义**************************/
         u8 Step=0;
         u8 Entering_Flag=1;
+        
         uint32_t New_Card =0x22222222;      //新的卡号，用于临时存储将要录入的卡号
         uint32_t New_Card1=0x88888888;      //新的卡号，用于临时存储将要录入的卡号
         uint32_t New_Card2=0x66666666;      //新的卡号，用于临时存储将要录入的卡号
@@ -61,8 +62,6 @@ int main(void)
                         Step=1;
                         Mode=Entering_Mode;
                         delay_ms(3000);
-                        
-                       
                 }
                 
                 switch(Mode)
@@ -129,7 +128,28 @@ int main(void)
                         break ;
                         
                         case General_Mode:              //普通模式
+                                if(Temp_flag!=0)
+                                {
+                                        Temperature_System();   //调用恒温系统执行函数
+                                }
+                                for(i=0;i<Card_Pos;i++)
+                                {
+                                        if(New_Card==ID_Card[i])
+                                        {
+                                                Door_Flag=1;
+                                                break;
+                                        }
+                                }
                                 
+                                if(Door_Flag!=0)
+                                {
+                                        TIM3->CCR3=25;    //180°
+                                }
+                                
+                                else
+                                {
+                                        TIM3->CCR3=5;    //0°
+                                }
                         break ;
                         default :
                                 break;
@@ -139,16 +159,7 @@ int main(void)
 //                printf("电压=%f\n",ADC_ConvertedValueLocal);
 //                delay_ms(500);
 //                delay_ms(500);
-//                if(Temp_flag!=0)
-//                {
-//                        Temperature_System();   //调用恒温系统执行函数
-//                }
 //                
-//                if( Time_Flag!=0 )    
-//                {
-////                        Network_System();       //调用网络函数，把传感器的值传上去
-//                        Time_Flag=0;
-//                }
                 
                 /* 解析串口接收的字符串  */
 //                if( USART2_IT_Flag != 0 )
@@ -258,7 +269,6 @@ void System_Init(void)
         spi_Init();
         ADC1_Init();
         RC522_Init();
-//        ID_Card[0]=0x9276381B;
 }
 
 uint32_t RFID_Number ( void )

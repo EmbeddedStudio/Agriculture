@@ -1,14 +1,15 @@
 #include "main.h"
 
-const uint32_t Administrator_ID = 0x9276381B;
-const uint32_t Initial=0x00000000;
-u8 Temp_flag = 1 ;
+const uint32_t Administrator_ID = 0x9276381B;           //管理员卡号
+const uint32_t Initial=0x00000000;                      //默认没刷到卡的返回值
+u8 Temp_flag = 1 ;                      //是否开启自动调温系统
 u8 Show_flag = 0;
 u8 Irrigation_flag=0;   //喷灌标志
 u8 Exhaust_flag=0;      //排风标志
-
-float Illumination=0;
-char temp[10];
+u8  Administ_Flag=0;            //管理员标志，用于开始计时三秒后如果还是管理员才进入录入模式
+u8  Administ_Entering=0;        //真正确定是否进入录入模式的标志
+float Illumination=0;                   //光强值
+char temp[10];                  
 char Humi[10];
 char lighting[10];
 
@@ -36,7 +37,6 @@ int main(void)
         uint32_t *p_Card;
         u8 i;           //用于加载钥匙库的循环变量以及遍历的循环变量
         
-        
 //        The_System_First_Run();                //函数慎用
         
         //把 flash 里面的 ID 号加载到内存中来
@@ -48,31 +48,50 @@ int main(void)
                 printf("ID为%8X\r\n",ID_Card[i]);
         }
 
-       
         Mode = General_Mode;
         while(1)
         {
-                
                 delay_ms(500);
-                
                 New_Card=RFID_Number();
-                
-                if(  Administrator_ID == New_Card && Mode==General_Mode && Step==0 )
+                //从内存里查询是否有这个卡号
+                for(i=0;i<Card_Pos;i++)
                 {
+                        if(New_Card==ID_Card[i])
+                        {
+                                Door_Flag=1;
+                                Door_Time=0;
+                                break;
+                        }
+                        if(i==Card_Pos-1 && New_Card!=Initial)
+                        {
+                                //查询后未找到卡确定为未知卡刷卡则报警
+                                Mode=Abnormal_Mode;
+                        }
+                }
+                //普通模式下的管理员开门并且开始计时
+                if( (New_Card == Administrator_ID) && (Mode==General_Mode) )
+                {
+                        Administ_Flag=1;             //标志位置1让定时器开始计时
+                }
+                //5秒时间到   并且步骤卡号模式都正确那么将进入录入模式
+                if( (Administ_Entering!=0) && Step==0  &&  (Administrator_ID == New_Card) && (Mode==General_Mode) )
+                {
+                        Administ_Entering=0;
                         Step=1;
                         Mode=Entering_Mode;
-                        delay_ms(3000);
+                        delay_ms(1000);
+                        printf("开始录入新的卡号\r\n");
                 }
                 
                 switch(Mode)
                 {
                         case Abnormal_Mode:             //异常模式
-                                
+                                printf("[%s][%d]\r\n", __func__, __LINE__);
                         break ;
                         
                         case Entering_Mode:             //录入模式
-                                        printf("[%s][%d]\r\n", __func__, __LINE__);
-                                        if(New_Card!=Administrator_ID && New_Card!=Initial && Step==1)
+                                        
+                                        if(Step==1 && New_Card!=Administrator_ID && New_Card!=Initial  )
                                         {
                                                 New_Card1=New_Card;
                                                 Step=2;
@@ -83,14 +102,14 @@ int main(void)
                                                 Step=3;
                                                 printf("New_Card2:%08X  ",New_Card2);
                                         }
-                                        if(New_Card!=Administrator_ID && New_Card!=Initial && Step==3)
+                                        if( Step==3 && New_Card!=Administrator_ID && New_Card!=Initial )
                                         {
                                                 New_Card2=New_Card;
                                                 Step=4;
                                                 printf("New_Card2:%08X  ",New_Card2);
                                         }
 
-                                        if(New_Card1==New_Card2 && Step==4)
+                                        if( Step==4 && New_Card1==New_Card2 )
                                         {
                                                
                                                 for (i=0;i<Card_Pos;i++)
@@ -115,7 +134,6 @@ int main(void)
                                                         printf("新的卡号为：%08X\r\n",New_Card2);
                                                 }
                                                 Entering_Flag=1;
-                                                
                                                 Step=0;
                                                 Mode= General_Mode;
                                         }
@@ -128,28 +146,40 @@ int main(void)
                         break ;
                         
                         case General_Mode:              //普通模式
+                                
                                 if(Temp_flag!=0)
                                 {
                                         Temperature_System();   //调用恒温系统执行函数
                                 }
-                                for(i=0;i<Card_Pos;i++)
-                                {
-                                        if(New_Card==ID_Card[i])
-                                        {
-                                                Door_Flag=1;
-                                                break;
-                                        }
-                                }
-                                
                                 if(Door_Flag!=0)
                                 {
-                                        TIM3->CCR3=25;    //180°
+                                        TIM3->CCR3=15;    //90°开门
                                 }
-                                
                                 else
                                 {
-                                        TIM3->CCR3=5;    //0°
+                                        TIM3->CCR3=5;    //0°关门
                                 }
+                                //调光   如果光强小于一定的时候就开灯
+                                if( Illumination < light_Min)
+                                {
+                                        Water_ON;
+                                }
+                                if( Illumination > light_Max)
+                                {
+                                        Water_OFF;
+                                }
+                                OLED_Fill(0x00);
+                                sprintf(temp,"%d.%d",Temp_int,Temp_deci);
+                                sprintf(Humi,"%d.%d",Humi_int,Humi_deci);
+                                sprintf(lighting,"%0.2f",Illumination);
+                                OLED_ShowCN(32,0,4,title);      //显示标题----智慧农业
+                                OLED_ShowCN(0,2,3,temp_code);   //显示温度
+                                OLED_ShowCN(0,4,3,Humi_code);   //显示湿度
+                                OLED_ShowCN(0,6,3,light);       //显示光强
+                                OLED_ShowStr(49,2,temp,2);
+                                OLED_ShowStr(49,4,Humi,2);
+                                OLED_ShowStr(49,6,lighting,2);
+                                
                         break ;
                         default :
                                 break;
@@ -179,17 +209,8 @@ int main(void)
 //        
 //        if(Show_flag==0)
 //        {
-//                sprintf(temp,"%d.%d",DHT11_Data.temp_int,DHT11_Data.temp_deci);
-//                sprintf(Humi,"%d.%d",DHT11_Data.humi_int,DHT11_Data.humi_deci);
-//                sprintf(lighting,"%0.2f",Illumination);
-//                OLED_Fill(0x00);
-//                OLED_ShowCN(32,0,4,title);      //显示标题----智慧农业
-//                OLED_ShowCN(0,2,3,temp_code);   //显示温度
-//                OLED_ShowCN(0,4,3,Humi_code);   //显示湿度
-//                OLED_ShowCN(0,6,3,light);       //显示光强
-//                OLED_ShowStr(49,2,temp,2);
-//                OLED_ShowStr(49,4,Humi,2);
-//                OLED_ShowStr(49,6,lighting,2);
+//                
+//                
 //                Show_flag=~Show_flag;
 //        }
 //        else
@@ -234,23 +255,26 @@ int main(void)
 
 void  Temperature_System (void)
 {
-        if( Temperature > temp_max )
+        if(Temp_flag!=0)
         {
-                         //关闭太阳灯并开启水阀进行降温
-                TemDown_ON;
-        }
-        else if ( Temperature < ((temp_max+temp_min)/2) && Temperature > temp_min )
-        {
-                TemDown_OFF;
-        }
-        else if ( Temperature > ((temp_max+temp_min)/2) && Temperature < temp_max )
-        {
-                LED_OFF ;
-        }
-        else if ( Temperature < temp_min )
-        {
-                      //关闭水阀并开启太阳灯进行升温
-                LED_ON;
+                if( Temperature > temp_max )
+                {
+                                 //关闭太阳灯并开启水阀进行降温
+                        TemDown_ON;
+                }
+                else if ( Temperature < ((temp_max+temp_min)/2) && Temperature > temp_min )
+                {
+                        TemDown_OFF;
+                }
+                else if ( Temperature > ((temp_max+temp_min)/2) && Temperature < temp_max )
+                {
+                        LED_OFF ;
+                }
+                else if ( Temperature < temp_min )
+                {
+                              //关闭水阀并开启太阳灯进行升温
+                        LED_ON;
+                }
         }
 }
 void System_Init(void)

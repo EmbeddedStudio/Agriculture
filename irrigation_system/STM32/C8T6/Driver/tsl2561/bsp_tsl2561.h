@@ -32,8 +32,8 @@
 #define SLAVE_ADDR_WR 0x72 //数据手册给的是上面的地址，但是还要进行<<1位就是现在的地址了
 #define SLAVE_ADDR_RD 0x73 
 
-
-
+extern float light_Min;
+extern float light_Max;
 void TSL2561_Write(u8 addr,u8 cmd);
 u8 TSL2561_Read(u8 addr);
 void TSL2561_Init(void);

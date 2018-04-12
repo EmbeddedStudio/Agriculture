@@ -41,7 +41,9 @@ extern   u8 Show_flag ;
 extern   u8 Irrigation_flag ;   //喷灌标志
 extern   u8 Exhaust_flag ;      //排风标志
 extern float Illumination;
-extern u16 time_mode
+extern u16 time_mode;
+extern u8  Administ_Flag;
+extern u8  Administ_Entering;
 void Temperature_System(void);
 void Network_System(void);
 void System_Init(void);

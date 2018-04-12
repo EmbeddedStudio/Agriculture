@@ -2,6 +2,8 @@
 #include "bsp_i2c.h"
 #include "bsp_usart.h"
 
+float light_Min=50.0;
+float light_Max=150.0;
  void TSL2561_Write(u8 addr,u8 cmd) 
 {
         I2C_Start();

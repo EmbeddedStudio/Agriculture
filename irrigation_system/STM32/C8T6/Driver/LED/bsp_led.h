@@ -17,12 +17,16 @@
 #define LED_GPIO_CLK           RCC_APB2Periph_GPIOB        /* GPIO端口时钟 */
 #define LED_GPIO_PIN           GPIO_Pin_14              /* 连接到SCL时钟线的GPIO */
 
+#define DOOR_GPIO_PORT          GPIOA                   /* GPIO端口 */
+#define DOOR_GPIO_CLK           RCC_APB2Periph_GPIOA        /* GPIO端口时钟 */
+#define DOOR_GPIO_PIN           GPIO_Pin_15              /* 连接到SCL时钟线的GPIO */
+
 /** the macro definition to trigger the led on or off 
   * 1 - off
-  *0 - on
+  *1 - on
   */
-#define ON  0
-#define OFF 1
+#define ON  1
+#define OFF 0
 
 /* 使用标准的固件库控制IO*/
 #define Water(a) if (a)  \
@@ -45,6 +49,8 @@
 #define digitalHi(p,i)  {p->BSRR=i;}    //输出为高电平        
 #define digitalLo(p,i)  {p->BRR=i;}     //输出低电平
 #define digitalToggle(p,i) {p->ODR ^=i;} //输出反转状态
+
+#define READDOOR         ((DOOR_GPIO_PORT->IDR & DOOR_GPIO_PIN)==0)   //读到的是低电平
 
 
 /* 定义控制IO的宏 */

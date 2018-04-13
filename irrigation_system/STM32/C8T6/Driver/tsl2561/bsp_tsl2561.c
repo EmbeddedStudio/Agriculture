@@ -86,8 +86,8 @@ float Read_Light(void )
         {  
                 lx=0;  
         }  
-        
-        return lx*4*3.14;
+        return lx;              //流明单位
+//        return lx*4*3.14;     //坎德拉单位
 } 
 
 

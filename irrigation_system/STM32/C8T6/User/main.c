@@ -4,12 +4,14 @@ const uint32_t Administrator_ID = 0x9276381B;           //管理员卡号
 const uint32_t Initial=0x00000000;                      //默认没刷到卡的返回值
 u8 Temp_flag = 1 ;                      //是否开启自动调温系统
 u8 Show_flag = 0;
+u8 BEEP_Flag = 0 ;
 u8 Irrigation_flag=0;   //喷灌标志
 u8 Exhaust_flag=0;      //排风标志
-u8  Administ_Flag=0;            //管理员标志，用于开始计时三秒后如果还是管理员才进入录入模式
-u8  Administ_Entering=0;        //真正确定是否进入录入模式的标志
+u8 Administ_Flag=0;            //管理员标志，用于开始计时三秒后如果还是管理员才进入录入模式
+u8 Administ_Entering=0;        //真正确定是否进入录入模式的标志
 float Illumination=0;                   //光强值
-char temp[10];                  
+
+char temp[10];                  //装载字符串用于屏幕显示
 char Humi[10];
 char lighting[10];
 
@@ -54,30 +56,55 @@ int main(void)
                 delay_ms(500);
                 New_Card=RFID_Number();
                 //从内存里查询是否有这个卡号
-                
+                for(i=0;i<Card_Pos;i++)
+                {
+                        if(New_Card==ID_Card[i])
+                        {
+                                Door_Flag=1;
+                                Door_Time=0;
+                                
+                                if(Mode!=Entering_Mode)
+                                {       
+                                        BEEP_OFF;
+                                        Mode=General_Mode;
+                                        BEEP_Flag=0;
+                                        BEEP_Time=0;
+                                }
+                                break;
+                        }
+                        if(i==Card_Pos-1 && New_Card!=Initial && Mode!=Entering_Mode)
+                        {
+                                //查询后未找到卡确定为未知卡刷卡则报警
+                                Mode=Abnormal_Mode;
+                                BEEP_Flag=1;
+                        }
+                }
                 //普通模式下的管理员开门并且开始计时
                 
-                if( (New_Card == Administrator_ID) && (Mode==General_Mode) )
+                if( (New_Card == Administrator_ID) && (Mode==General_Mode) && Administ_Entering==0 )
                 {
                         Administ_Flag=1;             //标志位置1让定时器开始计时
+                        
                 }
                 //5秒时间到   并且步骤卡号模式都正确那么将进入录入模式
-                if( (Administ_Entering!=0) && Step==0  &&  (Administrator_ID == New_Card) && (Mode==General_Mode) )
+                if( (Administ_Entering!=0) && Step==0  &&  (Administrator_ID == New_Card)  && (Mode==General_Mode) )
                 {
                         Administ_Entering=0;
-                        Step=1;
+                        Administ_Time=0;                 //进入录入模式之后将Administ_Entering关闭
+                        Step=1;                          //同时计时清零  狡兔死走狗烹
                         Mode=Entering_Mode;
                         delay_ms(1000);
                         printf("开始录入新的卡号\r\n");
                 }
-                
+                printf("Mode=%d\n",Mode);
                 switch(Mode) 
                 {
                         case Abnormal_Mode:             //异常模式
-                                printf("[%s][%d]\r\n", __func__, __LINE__);
-                                
+                        
+                        if(BEEP_Flag!=0)
+                        {
                                 BEEP_ON;
-                                delay_ms(1000);
+                        }
                                 
                         break ;
                         
@@ -88,7 +115,7 @@ int main(void)
                                                 New_Card1=New_Card;
                                                 Step=2;
                                                 printf("New_Card1:%08X  ",New_Card1);
-                                         }
+                                        }
                                         if(New_Card==Administrator_ID && Step==2)
                                         {
                                                 Step=3;
@@ -139,21 +166,7 @@ int main(void)
                         
                         case General_Mode:              //普通模式
                                         
-                                for(i=0;i<Card_Pos;i++)
-                                {
-                                        if(New_Card==ID_Card[i])
-                                        {
-                                                Door_Flag=1;
-                                                Door_Time=0;
-                                                Mode=General_Mode;
-                                                break;
-                                        }
-                                        if(i==Card_Pos-1 && New_Card!=Initial && Mode==General_Mode)
-                                        {
-                                                //查询后未找到卡确定为未知卡刷卡则报警
-                                                Mode=Abnormal_Mode;
-                                        }
-                                }
+                                
                                 
                                 if(Temp_flag!=0)
                                 {
@@ -275,11 +288,11 @@ void  Temperature_System (void)
                                  //关闭太阳灯并开启水阀进行降温
                         TemDown_ON;
                 }
-                else if ( Temperature < ((temp_max+temp_min)/2) && Temperature > temp_min )
+                else if ( Temperature < ((temp_max+temp_min)/2)  )
                 {
                         TemDown_OFF;
                 }
-                else if ( Temperature > ((temp_max+temp_min)/2) && Temperature < temp_max )
+                else if ( Temperature > ((temp_max+temp_min)/2)  )
                 {
                         LED_OFF ;
                 }

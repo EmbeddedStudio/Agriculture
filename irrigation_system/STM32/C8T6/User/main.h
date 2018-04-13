@@ -36,10 +36,12 @@ extern u8 USART2_IT_Flag;
 extern u8 Time_Flag;
 extern u8 Mode;
 extern u8 Door_Flag;
-extern   u8 Temp_flag  ;
-extern   u8 Show_flag ;
-extern   u8 Irrigation_flag ;   //喷灌标志
-extern   u8 Exhaust_flag ;      //排风标志
+extern u8 Temp_flag  ;
+extern u8 BEEP_Flag;
+extern u16 Administ_Time;
+extern u8 Show_flag ;
+extern u8 Irrigation_flag ;   //喷灌标志
+extern u8 Exhaust_flag ;      //排风标志
 extern float Illumination;
 extern u16 time_mode;
 extern u8  Administ_Flag;

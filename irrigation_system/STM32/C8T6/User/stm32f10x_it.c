@@ -17,6 +17,8 @@ u16 Upsata_Time=0;              //上传时间计时
 u16 time_mode=0;                //录入模式的计时，一分钟后如果没有完成录入自动回到普通模式
 u16 Administ_Time=0;            //用于管理员的计时
 u16 Door_Time=0;                 //用于关门的计时
+u16  BEEP_Time=0;               //用于蜂鸣器的报警时间为30秒
+
 void USART2_IRQHandler ( void )
 { 
         if ( USART_GetITStatus ( USART2, USART_IT_RXNE ) != RESET )
@@ -68,19 +70,27 @@ void  BASIC_TIM_IRQHandler (void)               //定时器中断  用于各种定时
                 if(Door_Flag!=0)                        //处于解锁但未开门状态开始计时
                 {
                         Door_Time++;
-                        if(Door_Time>=10000 && READDOOR)    //如果时间超过10秒还没有开门那么就上锁
-                        {
+                        if((Door_Time>=10000) && READDOOR)    //如果时间超过10秒还没有开门那么就上锁
+                        {                                       //低电平
                                 Door_Time=0;
                                 Door_Flag=0;
                         }
-                        if(Door_Time>=60000 && !READDOOR)
+                        if((Door_Time>=60000) && (!READDOOR))
                         {
                                 Door_Time=0;
                                 Mode=Abnormal_Mode;
                                 //异常发出警报
                         }
                 }
-                
+                if(BEEP_Flag!=0)
+                {
+                        BEEP_Time++;
+                        if(BEEP_Time>=30000)
+                        {
+                                BEEP_Time=0;
+                                BEEP_Flag=0;
+                        }
+                }
                 
                 TIM_ClearITPendingBit(BASIC_TIM , TIM_FLAG_Update); 
         } 

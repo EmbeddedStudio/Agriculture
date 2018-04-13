@@ -40,9 +40,7 @@ extern u16 Door_Time;
          
 void Down_Control(void);
 void Updata (void);
-         
-         
-         
+ 
          
          
          

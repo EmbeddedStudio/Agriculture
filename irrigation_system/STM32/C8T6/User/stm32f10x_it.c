@@ -101,7 +101,7 @@ void Updata (void)
 {
         DHT11_Data_TypeDef   DHT11_Data;
         char DataStr [ 500 ]  ;
-        
+         
         Illumination=Read_Light();
         
         if( DHT11_Read_TempAndHumidity ( & DHT11_Data ) == SUCCESS)

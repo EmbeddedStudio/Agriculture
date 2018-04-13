@@ -54,21 +54,9 @@ int main(void)
                 delay_ms(500);
                 New_Card=RFID_Number();
                 //从内存里查询是否有这个卡号
-                for(i=0;i<Card_Pos;i++)
-                {
-                        if(New_Card==ID_Card[i])
-                        {
-                                Door_Flag=1;
-                                Door_Time=0;
-                                break;
-                        }
-                        if(i==Card_Pos-1 && New_Card!=Initial)
-                        {
-                                //查询后未找到卡确定为未知卡刷卡则报警
-                                Mode=Abnormal_Mode;
-                        }
-                }
+                
                 //普通模式下的管理员开门并且开始计时
+                
                 if( (New_Card == Administrator_ID) && (Mode==General_Mode) )
                 {
                         Administ_Flag=1;             //标志位置1让定时器开始计时
@@ -83,10 +71,14 @@ int main(void)
                         printf("开始录入新的卡号\r\n");
                 }
                 
-                switch(Mode)
+                switch(Mode) 
                 {
                         case Abnormal_Mode:             //异常模式
                                 printf("[%s][%d]\r\n", __func__, __LINE__);
+                                
+                                BEEP_ON;
+                                delay_ms(1000);
+                                
                         break ;
                         
                         case Entering_Mode:             //录入模式
@@ -146,6 +138,22 @@ int main(void)
                         break ;
                         
                         case General_Mode:              //普通模式
+                                        
+                                for(i=0;i<Card_Pos;i++)
+                                {
+                                        if(New_Card==ID_Card[i])
+                                        {
+                                                Door_Flag=1;
+                                                Door_Time=0;
+                                                Mode=General_Mode;
+                                                break;
+                                        }
+                                        if(i==Card_Pos-1 && New_Card!=Initial && Mode==General_Mode)
+                                        {
+                                                //查询后未找到卡确定为未知卡刷卡则报警
+                                                Mode=Abnormal_Mode;
+                                        }
+                                }
                                 
                                 if(Temp_flag!=0)
                                 {
@@ -154,10 +162,14 @@ int main(void)
                                 if(Door_Flag!=0)
                                 {
                                         TIM3->CCR3=15;    //90°开门
+                                        delay_ms(500);
+                                        TIM3->CCR3=0;
                                 }
                                 else
                                 {
                                         TIM3->CCR3=5;    //0°关门
+                                        delay_ms(500);
+                                        TIM3->CCR3=0;    //0°关门
                                 }
                                 //调光   如果光强小于一定的时候就开灯
                                 if( Illumination < light_Min)
@@ -168,6 +180,7 @@ int main(void)
                                 {
                                         Water_OFF;
                                 }
+                                
                                 OLED_Fill(0x00);
                                 sprintf(temp,"%d.%d",Temp_int,Temp_deci);
                                 sprintf(Humi,"%d.%d",Humi_int,Humi_deci);

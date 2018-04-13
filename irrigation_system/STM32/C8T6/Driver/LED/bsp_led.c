@@ -7,9 +7,9 @@ void LED_GPIO_Config(void)
 
         /*开启LED相关的GPIO外设时钟*/
         RCC_APB2PeriphClockCmd( Water_GPIO_CLK | TemDown_GPIO_CLK | LED_GPIO_CLK, ENABLE);
-         RCC_APB2PeriphClockCmd( DOOR_GPIO_CLK , ENABLE);
+         RCC_APB2PeriphClockCmd( DOOR_GPIO_CLK |BEEP_GPIO_CLK, ENABLE);
         /*选择要控制的GPIO引脚*/
-        GPIO_InitStructure.GPIO_Pin = Water_GPIO_PIN | TemDown_GPIO_PIN | LED_GPIO_PIN; 
+        GPIO_InitStructure.GPIO_Pin = Water_GPIO_PIN | TemDown_GPIO_PIN | LED_GPIO_PIN|BEEP_GPIO_PIN; 
 
         /*设置引脚模式为通用推挽输出*/
         GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_PP;   
@@ -21,6 +21,7 @@ void LED_GPIO_Config(void)
         GPIO_Init(Water_GPIO_PORT , &GPIO_InitStructure); 
         GPIO_Init(TemDown_GPIO_PORT , &GPIO_InitStructure);
         GPIO_Init(LED_GPIO_PORT , &GPIO_InitStructure);
+        GPIO_Init(BEEP_GPIO_PORT , &GPIO_InitStructure);
         
         GPIO_InitStructure.GPIO_Mode=GPIO_Mode_IPU;
         GPIO_InitStructure.GPIO_Pin=DOOR_GPIO_PIN;
@@ -30,5 +31,6 @@ void LED_GPIO_Config(void)
         GPIO_ResetBits(Water_GPIO_PORT, Water_GPIO_PIN);
         GPIO_ResetBits(TemDown_GPIO_PORT, TemDown_GPIO_PIN); 
         GPIO_ResetBits(LED_GPIO_PORT, LED_GPIO_PIN);
+        GPIO_ResetBits(BEEP_GPIO_PORT, BEEP_GPIO_PIN);
         GPIO_SetBits(DOOR_GPIO_PORT,DOOR_GPIO_PIN);   //拉高假设门未关
 }

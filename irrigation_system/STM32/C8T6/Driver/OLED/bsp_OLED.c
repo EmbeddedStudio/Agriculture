@@ -2,6 +2,7 @@
 #include "codetab.h"
 #include "bsp_i2c.h"
 #include "bsp_systick.h"
+#include "bsp_usart.h"
 
 static void WriteDat(unsigned char I2C_Data)//Ð´Êý¾Ý
 {

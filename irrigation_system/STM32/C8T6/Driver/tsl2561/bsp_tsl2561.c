@@ -59,7 +59,7 @@ float Read_Light(void )
         DataLow0=TSL2561_Read(TSL2561_DATA0_LOW);
         DataHigh0=TSL2561_Read(TSL2561_DATA0_HIGH);
         ch0=(DataHigh0<<8|DataLow0);
-        
+         
         DataLow1=TSL2561_Read(TSL2561_DATA1_LOW);
         DataHigh1=TSL2561_Read(TSL2561_DATA1_HIGH);
         ch1=(DataHigh1<<8|DataLow1);

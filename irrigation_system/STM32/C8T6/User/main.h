@@ -21,8 +21,8 @@
 
 
 #define   Base                 0x8000000
-#define   Pos_Address         (Base+1204*21)
-#define   Card_Address        (Base+1204*22)
+#define   Pos_Address         (Base+1204*31)
+#define   Card_Address        (Base+1204*32)
 
 typedef enum
 { 

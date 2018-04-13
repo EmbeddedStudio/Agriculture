@@ -20,6 +20,10 @@
 #define DOOR_GPIO_PORT          GPIOA                   /* GPIO端口 */
 #define DOOR_GPIO_CLK           RCC_APB2Periph_GPIOA        /* GPIO端口时钟 */
 #define DOOR_GPIO_PIN           GPIO_Pin_15              /* 连接到SCL时钟线的GPIO */
+        
+#define BEEP_GPIO_PORT          GPIOA                    /* GPIO端口 */
+#define BEEP_GPIO_CLK           RCC_APB2Periph_GPIOA        /* GPIO端口时钟 */
+#define BEEP_GPIO_PIN           GPIO_Pin_8              /* 连接到SCL时钟线的GPIO */
 
 /** the macro definition to trigger the led on or off 
   * 1 - off
@@ -65,6 +69,11 @@
 #define LED_TOGGLE        digitalToggle(LED_GPIO_PORT,LED_GPIO_PIN)
 #define LED_ON            digitalHi(LED_GPIO_PORT,LED_GPIO_PIN)
 #define LED_OFF           digitalLo(LED_GPIO_PORT,LED_GPIO_PIN)
+
+
+#define BEEP_TOGGLE        digitalToggle(BEEP_GPIO_PORT,BEEP_GPIO_PIN)
+#define BEEP_ON            digitalHi(BEEP_GPIO_PORT,BEEP_GPIO_PIN)
+#define BEEP_OFF           digitalLo(BEEP_GPIO_PORT,BEEP_GPIO_PIN)
 
 /* 基本混色，后面高级用法使用PWM可混出全彩颜色,且效果更好 */
 

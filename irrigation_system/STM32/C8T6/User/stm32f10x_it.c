@@ -7,17 +7,17 @@ u8 Humi_int =0 ;
 u8 Humi_deci=0 ;
 u8 Temp_int =0 ; 
 u8 Temp_deci=0 ;
-
+float Soil_Humidity=0.0;                //土壤湿度值
 
 
 
 static u8 count = 0;
 //u8 Time_Flag=0;
 u16 Upsata_Time=0;              //上传时间计时
-u16 time_mode=0;                //录入模式的计时，一分钟后如果没有完成录入自动回到普通模式
+u16 Mode_Time=0;                //录入模式的计时，一分钟后如果没有完成录入自动回到普通模式
 u16 Administ_Time=0;            //用于管理员的计时
 u16 Door_Time=0;                 //用于关门的计时
-u16  BEEP_Time=0;               //用于蜂鸣器的报警时间为30秒
+u16 BEEP_Time=0;               //用于蜂鸣器的报警时间为30秒
 
 void USART2_IRQHandler ( void )
 { 
@@ -45,27 +45,30 @@ void  BASIC_TIM_IRQHandler (void)               //定时器中断  用于各种定时
                 }
                 if(Mode==Entering_Mode) //一分钟退出管理员录入模式
                 {
-                        time_mode++;
-                        if(time_mode>=60000)
+                        Mode_Time++;
+                        if(Mode_Time>=60000)
                         {
-                                time_mode=0;
+                                Mode_Time=0;
                                 Mode=General_Mode;
                         }
                 }
                 if( Administ_Flag !=0 )  //管理员计时  五秒后如果还是管理员卡那么就进入录入模式
                 {
                         Administ_Time++;
-                        if(Administ_Time > 5000 && Administ_Time < 10000 )
-                        {
+                        if(Administ_Time > 5000 && Administ_Time < 6000 )
+                        { 
                                 Administ_Entering=1;
                         }
-                        if(Administ_Time>=10000)
-                        {
+                        if(Administ_Time>=20000)
+                        { 
                                 Administ_Time=0;
                                 Administ_Entering=0;
                                 Administ_Flag=0;                //5秒后如果没有再次刷管理员卡退出本次计时
+//                                Step=0;
+                                Mode=General_Mode;
                         }
                 }
+                
                 
                 if(Door_Flag!=0)                        //处于解锁但未开门状态开始计时
                 {
@@ -73,7 +76,7 @@ void  BASIC_TIM_IRQHandler (void)               //定时器中断  用于各种定时
                         if((Door_Time>=10000) && READDOOR)    //如果时间超过10秒还没有开门那么就上锁
                         {                                       //低电平
                                 Door_Time=0;
-                                Door_Flag=0;
+                                Door_Flag=2;
                         }
                         if((Door_Time>=60000) && (!READDOOR))
                         {
@@ -82,15 +85,16 @@ void  BASIC_TIM_IRQHandler (void)               //定时器中断  用于各种定时
                                 //异常发出警报
                         }
                 }
-                if(BEEP_Flag!=0)
+                if(BEEP_Flag!=0)                        //处于解锁但未开门状态开始计时
                 {
                         BEEP_Time++;
-                        if(BEEP_Time>=30000)
-                        {
+                        if(  BEEP_Time>= 30000   )     
+                        {                                        
                                 BEEP_Time=0;
                                 BEEP_Flag=0;
                         }
                 }
+                
                 
                 TIM_ClearITPendingBit(BASIC_TIM , TIM_FLAG_Update); 
         } 
@@ -113,6 +117,10 @@ void Updata (void)
         char DataStr [ 500 ]  ;
          
         Illumination=Read_Light();
+        //这三行为测量土壤湿度的代码
+        Soil_Humidity =(float) ADC_ConvertedValue/40.96;
+        Soil_Humidity=100-Soil_Humidity;
+        printf("Soil_Humidity:%0.2f\n",Soil_Humidity);
         
         if( DHT11_Read_TempAndHumidity ( & DHT11_Data ) == SUCCESS)
         {
@@ -120,11 +128,16 @@ void Updata (void)
                 Temp_deci=DHT11_Data.temp_deci;
                 Humi_int=DHT11_Data.humi_int;
                 Humi_deci=DHT11_Data.humi_deci;
+                //用DHT11结构体的话就用这个加载缺点是如果DHT11不工作光强的值也无法传送
 //                sprintf ( DataStr,"{\"Temperature\":\"%d.%d\",\"Humidity\":\"%d.%d\",\"Illumination\":\"%0.2f\"}",\
 //                DHT11_Data.temp_int,DHT11_Data.temp_deci,DHT11_Data.humi_int,DHT11_Data.humi_deci,Illumination);
         }
-        sprintf ( DataStr,"{\"Temperature\":\"%d.%d\",\"Humidity\":\"%d.%d\",\"Illumination\":\"%0.2f\"}",\
-                Temp_int,Temp_deci,Humi_int,Humi_deci,Illumination);
+        //湿度来自于DHT11
+//        sprintf ( DataStr,"{\"Temperature\":\"%d.%d\",\"Humidity\":\"%d.%d\",\"Illumination\":\"%0.2f\"}",\
+//                Temp_int,Temp_deci,Humi_int,Humi_deci,Illumination);
+        //湿度来自于土壤湿度传感器
+        sprintf ( DataStr,"{\"Temperature\":\"%d.%d\",\"Humidity\":\"%0.2f\",\"Illumination\":\"%0.2f\"}",\
+                Temp_int,Temp_deci,Soil_Humidity,Illumination);
         printf("%s\r\n",DataStr);
         Usart2_SendString(USART2,DataStr);
 }

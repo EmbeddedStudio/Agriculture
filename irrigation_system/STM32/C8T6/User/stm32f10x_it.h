@@ -35,8 +35,11 @@ extern u8 Humi_int   ;
 extern u8 Humi_deci  ; 
 extern u8 Temp_int  ;
 extern u8 Temp_deci ;
-         
+extern u16  BEEP_Time;
 extern u16 Door_Time;
+extern u16 Door_Time;
+extern float Soil_Humidity;
+         
          
 void Down_Control(void);
 void Updata (void);

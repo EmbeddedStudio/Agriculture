@@ -2,6 +2,7 @@
 
 const uint32_t Administrator_ID = 0x9276381B;           //管理员卡号
 const uint32_t Initial=0x00000000;                      //默认没刷到卡的返回值
+
 u8 Temp_flag = 1 ;                      //是否开启自动调温系统
 u8 Show_flag = 0;
 u8 BEEP_Flag = 0 ;
@@ -18,8 +19,7 @@ char lighting[10];
 u32 ID_Card[256];                       //用于存储录入的卡号
 
 u8 Mode;
-u8 Door_Flag=0;
-
+u8 Door_Flag=2;         //0默认  不给方波   1开门  2关门
 
 
 int main(void)
@@ -28,21 +28,22 @@ int main(void)
         printf("[%s][%d]\r\n", __func__, __LINE__);
         
         /*************************局部变量的定义**************************/
-        u8 Step=0;
+        u8 Step=0;                      //录卡的步骤
         u8 Entering_Flag=1;
-        
+//        u8 Door_Change=0;                //增加这个变量只是消除舵机的抖动
         uint32_t New_Card =0x22222222;      //新的卡号，用于临时存储将要录入的卡号
         uint32_t New_Card1=0x88888888;      //新的卡号，用于临时存储将要录入的卡号
         uint32_t New_Card2=0x66666666;      //新的卡号，用于临时存储将要录入的卡号
+//              The_System_First_Run();                //函数慎用
         uint32_t *p_Pos= (uint32_t *)(Pos_Address);
         uint32_t  Card_Pos=*p_Pos;
         uint32_t *p_Card;
         u8 i;           //用于加载钥匙库的循环变量以及遍历的循环变量
         
-//        The_System_First_Run();                //函数慎用
+
         
         //把 flash 里面的 ID 号加载到内存中来
-        printf("\r\n当前第一个空地址为%d\r\n",*p_Pos);
+        printf("\r\n现在有%d个卡号\r\n",*p_Pos);
         for(i=0;i<Card_Pos;i++)
         {
                 p_Card = (uint32_t *)(Card_Address+i*4);
@@ -62,21 +63,24 @@ int main(void)
                         {
                                 Door_Flag=1;
                                 Door_Time=0;
-                                
+//                                Door_Change=1;
                                 if(Mode!=Entering_Mode)
                                 {       
                                         BEEP_OFF;
                                         Mode=General_Mode;
                                         BEEP_Flag=0;
-                                        BEEP_Time=0;
                                 }
                                 break;
                         }
                         if(i==Card_Pos-1 && New_Card!=Initial && Mode!=Entering_Mode)
                         {
+                                printf("[%s][%d]\r\n", __func__, __LINE__);
                                 //查询后未找到卡确定为未知卡刷卡则报警
                                 Mode=Abnormal_Mode;
+                                Door_Flag=2;
+                                Door_Time=0;
                                 BEEP_Flag=1;
+                                BEEP_Time=0;
                         }
                 }
                 //普通模式下的管理员开门并且开始计时
@@ -84,10 +88,11 @@ int main(void)
                 if( (New_Card == Administrator_ID) && (Mode==General_Mode) && Administ_Entering==0 )
                 {
                         Administ_Flag=1;             //标志位置1让定时器开始计时
+                        Administ_Time=0;
                         
                 }
                 //5秒时间到   并且步骤卡号模式都正确那么将进入录入模式
-                if( (Administ_Entering!=0) && Step==0  &&  (Administrator_ID == New_Card)  && (Mode==General_Mode) )
+                if( (Administ_Entering!=0) && ( Step==0 || Step==1 )&&  (Administrator_ID == New_Card)  && (Mode==General_Mode) )
                 {
                         Administ_Entering=0;
                         Administ_Time=0;                 //进入录入模式之后将Administ_Entering关闭
@@ -97,15 +102,21 @@ int main(void)
                         printf("开始录入新的卡号\r\n");
                 }
                 printf("Mode=%d\n",Mode);
+                printf("Door_Flag:%d\r\n",Door_Flag);
                 switch(Mode) 
                 {
                         case Abnormal_Mode:             //异常模式
                         
-                        if(BEEP_Flag!=0)
-                        {
+                        if(BEEP_Flag!=0)        //蜂鸣器响30秒后停止
+                        {                       
                                 BEEP_ON;
                         }
-                                
+                        else 
+                        {
+                                BEEP_OFF;
+                        }
+                                //屏幕持续显示异常原因直到正常为止
+                        
                         break ;
                         
                         case Entering_Mode:             //录入模式
@@ -165,25 +176,35 @@ int main(void)
                         break ;
                         
                         case General_Mode:              //普通模式
-                                        
-                                
                                 
                                 if(Temp_flag!=0)
                                 {
                                         Temperature_System();   //调用恒温系统执行函数
                                 }
-                                if(Door_Flag!=0)
+                                
+                                switch(Door_Flag)   //0默认  不给方波   1开门  2关门
                                 {
-                                        TIM3->CCR3=15;    //90°开门
-                                        delay_ms(500);
-                                        TIM3->CCR3=0;
+                                        case 1:
+                                                TIM3->CCR3=15;    //90°开门
+                                                break;
+                                        case 2:
+                                                TIM3->CCR3=5;    //0°关门
+                                                Door_Flag=0;
+                                                break;
+                                        default:
+                                                TIM3->CCR3=0;    //防止抖动
+                                                break;
                                 }
-                                else
-                                {
-                                        TIM3->CCR3=5;    //0°关门
-                                        delay_ms(500);
-                                        TIM3->CCR3=0;    //0°关门
-                                }
+//                                if(Door_Flag!=0)
+//                                {
+//                                        TIM3->CCR3=15;    //90°开门
+//                                }
+//                                else
+//                                {
+//                                        TIM3->CCR3=5;    //0°关门
+//                                }
+                                
+                                
                                 //调光   如果光强小于一定的时候就开灯
                                 if( Illumination < light_Min)
                                 {
@@ -196,7 +217,11 @@ int main(void)
                                 
                                 OLED_Fill(0x00);
                                 sprintf(temp,"%d.%d",Temp_int,Temp_deci);
-                                sprintf(Humi,"%d.%d",Humi_int,Humi_deci);
+                                //DHT11的湿度
+//                                sprintf(Humi,"%d.%d",Humi_int,Humi_deci);
+                                //土壤的湿度
+                                sprintf(Humi,"%0.2f",Soil_Humidity);
+                                
                                 sprintf(lighting,"%0.2f",Illumination);
                                 OLED_ShowCN(32,0,4,title);      //显示标题----智慧农业
                                 OLED_ShowCN(0,2,3,temp_code);   //显示温度

@@ -102,7 +102,7 @@ void OLED_Fill(unsigned char fill_Data)//È«ÆÁÌî³ä
 
 void OLED_CLS(void)//ÇåÆÁ
 {
-        OLED_Fill(0x00);
+        OLED_ShowStr(0,0,"          ",2);
 }
 
 //--------------------------------------------------------------

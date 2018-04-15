@@ -40,6 +40,7 @@ void  BASIC_TIM_IRQHandler (void)               //定时器中断  用于各种定时
                 Upsata_Time++;
                 if(Upsata_Time>=2500)           //定时2.5秒上传一次数据
                 {
+                        Show_flag=~Show_flag;
                         Upsata_Time=0;
                         Updata();
                 }
@@ -49,6 +50,7 @@ void  BASIC_TIM_IRQHandler (void)               //定时器中断  用于各种定时
                         if(Mode_Time>=60000)
                         {
                                 Mode_Time=0;
+                                Step=0;
                                 Mode=General_Mode;
                         }
                 }
@@ -56,15 +58,15 @@ void  BASIC_TIM_IRQHandler (void)               //定时器中断  用于各种定时
                 {
                         Administ_Time++;
                         if(Administ_Time > 5000 && Administ_Time < 6000 )
-                        { 
+                        {
                                 Administ_Entering=1;
                         }
                         if(Administ_Time>=20000)
-                        { 
+                        {
                                 Administ_Time=0;
                                 Administ_Entering=0;
                                 Administ_Flag=0;                //5秒后如果没有再次刷管理员卡退出本次计时
-//                                Step=0;
+                                Step=0;
                                 Mode=General_Mode;
                         }
                 }
@@ -82,14 +84,15 @@ void  BASIC_TIM_IRQHandler (void)               //定时器中断  用于各种定时
                         {
                                 Door_Time=0;
                                 Mode=Abnormal_Mode;
+                                anomaly=0;
                                 //异常发出警报
                         }
                 }
                 if(BEEP_Flag!=0)                        //处于解锁但未开门状态开始计时
                 {
                         BEEP_Time++;
-                        if(  BEEP_Time>= 30000   )     
-                        {                                        
+                        if(  BEEP_Time>= 30000   ) 
+                        { 
                                 BEEP_Time=0;
                                 BEEP_Flag=0;
                         }
@@ -120,7 +123,7 @@ void Updata (void)
         //这三行为测量土壤湿度的代码
         Soil_Humidity =(float) ADC_ConvertedValue/40.96;
         Soil_Humidity=100-Soil_Humidity;
-        printf("Soil_Humidity:%0.2f\n",Soil_Humidity);
+//        printf("Soil_Humidity:%0.2f\n",Soil_Humidity);
         
         if( DHT11_Read_TempAndHumidity ( & DHT11_Data ) == SUCCESS)
         {

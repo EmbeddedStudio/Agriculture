@@ -58,6 +58,10 @@ int main(void)
                         Mode=Abnormal_Mode;
                         anomaly=2;
                 }
+                else
+                {
+                        Mode=General_Mode;
+                }
                 New_Card=RFID_Number();
                 //从内存里查询是否有这个卡号
                 for(i=0;i<Card_Pos;i++)
@@ -281,6 +285,7 @@ int main(void)
                                         //土壤的湿度
                                         sprintf(Humi,"%0.2f     ",Soil_Humidity);  //5个空格不能少
                                         sprintf(lighting,"%0.2f     ",Illumination);
+//                                        __ASM("CPSID I");        //关中断
                                         OLED_ShowStr(0,0,"    ",2);     //4个空格
                                         OLED_ShowStr(97,0,"   ",2);     //3个空格
                                         
@@ -293,10 +298,11 @@ int main(void)
 //                                        OLED_ShowStr(113,3,"  ",2);
                                         OLED_ShowStr(49,4,Humi,2);
                                         OLED_ShowStr(49,6,lighting,2);
+//                                        __ASM("CPSIE I"); //开中断
                                 }
                                 else
                                 {
-                                        
+//                                        __ASM("CPSID I");        //关中断
                                         OLED_ShowStr(0,0,"    ",2);     //4个空格
                                         OLED_ShowStr(97,0,"   ",2);     //3个空格
                                         OLED_ShowCN(32,0,4,title);      //显示标题----智慧农业
@@ -332,7 +338,7 @@ int main(void)
                                         {
                                                 OLED_ShowCN(81,6,2,Close);
                                         }
-                                
+//                                        __ASM("CPSIE I"); //开中断
                                 }
                         break ;
                         default :

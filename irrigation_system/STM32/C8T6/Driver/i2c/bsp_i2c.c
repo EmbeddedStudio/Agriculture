@@ -110,6 +110,7 @@ int I2C_WaitAsk(void)
         delay_us(1);
         /* 是时候去读取 SDA 看看有没有响应了 */
         /* 在没有超时之前只要读到了应答就可以自动跳出 while */
+        __ASM("CPSID I");        //关中断  以免因中断误以为没有应答
         while(READSDA)
         {
                 ucErrTime++;
@@ -124,6 +125,7 @@ int I2C_WaitAsk(void)
                 }
                 
         }
+        __ASM("CPSIE I"); //开中断
         /* 到这里, 读取应答信号的 SCL 结束了 */
         SCL=0;
         /* 能执行到这里, 说明读取到了应答的 */

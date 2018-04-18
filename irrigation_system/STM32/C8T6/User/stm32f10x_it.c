@@ -118,12 +118,10 @@ void Updata (void)
 {
         DHT11_Data_TypeDef   DHT11_Data;
         char DataStr [ 500 ]  ;
-         
-        Illumination=Read_Light();
+        
         //这三行为测量土壤湿度的代码
         Soil_Humidity =(float) ADC_ConvertedValue/40.96;
         Soil_Humidity=100-Soil_Humidity;
-//        printf("Soil_Humidity:%0.2f\n",Soil_Humidity);
         
         if( DHT11_Read_TempAndHumidity ( & DHT11_Data ) == SUCCESS)
         {

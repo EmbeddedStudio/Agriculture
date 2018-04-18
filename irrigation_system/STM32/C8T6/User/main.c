@@ -2,6 +2,8 @@
 
 const uint32_t Administrator_ID = 0x9276381B;           //管理员卡号
 const uint32_t Initial=0x00000000;                      //默认没刷到卡的返回值
+const u8  Open_Door=  15;
+const u8  Close_Door=  5;
 
 u8 Temp_flag = 1 ;                      //是否开启自动调温系统
 u8 Show_flag = 0;
@@ -39,7 +41,7 @@ int main(void)
         uint32_t *p_Card;
         u8 i;           //用于加载钥匙库的循环变量以及遍历的循环变量
 
-        u8 Temperature_Max=25.00;          //高温预警的阈值
+        u8 Temperature_Max=26.00;          //高温预警的阈值
         
         //把 flash 里面的 ID 号加载到内存中来
         printf("\r\n现在有%d个卡号\r\n",*p_Pos);
@@ -53,15 +55,16 @@ int main(void)
         Mode = General_Mode;
         while(1)
         {
+                Illumination=Read_Light();
                 if(Temp_int>Temperature_Max)
                 {
                         Mode=Abnormal_Mode;
                         anomaly=2;
                 }
-                else
-                {
-                        Mode=General_Mode;
-                }
+//                else          //模式不能随意改变
+//                {
+//                        Mode=General_Mode;
+//                }
                 New_Card=RFID_Number();
                 //从内存里查询是否有这个卡号
                 for(i=0;i<Card_Pos;i++)
@@ -124,44 +127,39 @@ int main(void)
                         if(BEEP_Flag!=0)        //蜂鸣器响30秒后停止
                         {                       
                                 BEEP_ON;
+                                        //屏幕持续显示异常原因直到正常为止
+                                TIM3->CCR3=Close_Door;    //0°关门
+                                OLED_ShowStr(0,0,Blank,2);         //16个空格
+                                OLED_ShowStr(0,1,Blank,2);
+                                OLED_ShowStr(0,5,Blank,2);
+                                OLED_ShowStr(0,6,Blank,2);
+                                OLED_ShowStr(0,7,Blank,2);
+                                switch(anomaly)
+                                {
+                                        case 0  :       // 未关门
+                                                OLED_ShowStr(0,3,"    ",2);
+                                                OLED_ShowStr(97,3,"   ",2);
+                                                OLED_ShowCN(32,3,4,Nodoor);
+                                                break;
+                                        case 1  :       // 未知卡刷卡
+                                                OLED_ShowStr(0,3,"    ",2);
+                                                OLED_ShowStr(97,3,"   ",2);
+                                                OLED_ShowCN(32,3,2,NFC);
+                                                OLED_ShowCN(64,3,2,fail);
+                                                break;
+                                        case 2  :       // 高温预警
+                                                OLED_ShowStr(0,3,"    ",2);
+                                                OLED_ShowStr(97,3,"   ",2);
+                                                OLED_ShowCN(32,3,4,High_Temperature);
+                                                break;
+                                        default :
+                                                break;
+                                }
                         }
-                        else 
+                        else
                         {
+                                Mode=General_Mode;
                                 BEEP_OFF;
-                        }
-                                //屏幕持续显示异常原因直到正常为止
-                        
-                        OLED_ShowStr(0,0,Blank,2);         //16个空格
-                        OLED_ShowStr(0,1,Blank,2);
-//                        OLED_ShowStr(0,2,Blank,2);
-//                        OLED_ShowStr(0,3,Blank,2);
-//                        OLED_ShowStr(0,4,Blank,2);
-                        OLED_ShowStr(0,5,Blank,2);
-                        OLED_ShowStr(0,6,Blank,2);
-                        OLED_ShowStr(0,7,Blank,2);
-//                        OLED_ShowStr(0,3,"      ",2);
-//                        OLED_ShowCN(48,3,2,abnormal);           //异常前面后面写空格
-//                        OLED_ShowStr(81,3,"      ",2);
-                        switch(anomaly)
-                        {
-                                case 0  :       // 未关门
-                                        OLED_ShowStr(0,3,"    ",2);
-                                        OLED_ShowStr(97,3,"   ",2);
-                                        OLED_ShowCN(32,3,4,Nodoor);
-                                        break;
-                                case 1  :       // 未知卡刷卡
-                                        OLED_ShowStr(0,3,"    ",2);
-                                        OLED_ShowStr(97,3,"   ",2);
-                                        OLED_ShowCN(32,3,2,NFC);
-                                        OLED_ShowCN(64,3,2,fail);
-                                        break;
-                                case 2  :       // 高温预警
-                                        OLED_ShowStr(0,3,"    ",2);
-                                        OLED_ShowStr(97,3,"   ",2);
-                                        OLED_ShowCN(32,3,4,High_Temperature);
-                                        break;
-                                default :
-                                        break;
                         }
                         break ; 
                         
@@ -172,7 +170,9 @@ int main(void)
                                                 New_Card1=New_Card;
                                                 Step=2;
                                                 printf("New_Card1:%08X  ",New_Card1);
+                                                __ASM("CPSID I");        //关中断
                                                 sprintf(cCard_str,"    %08X    ",New_Card1);
+                                                __ASM("CPSIE I"); //开中断
                                                 OLED_ShowCN(32,1,2,NFC);
                                                 OLED_ShowCN(64,1,2,successful);
                                                 OLED_ShowStr(0,3,cCard_str,2);
@@ -229,7 +229,7 @@ int main(void)
                                                         OLED_ShowCN(32,2,2,enter);
                                                         OLED_ShowCN(64,2,2,successful);
                                                         OLED_ShowStr(0,4,cCard_str,2);
-                                                        
+                                                        delay_ms(500);
                                                 }
                                                 Entering_Flag=1;
                                                 Step=0;
@@ -255,10 +255,10 @@ int main(void)
                                 switch(Door_Flag)   //0默认  不给方波   1开门  2关门
                                 {
                                         case 1:
-                                                TIM3->CCR3=15;    //90°开门
+                                                TIM3->CCR3=Open_Door;    //90°开门
                                                 break;
                                         case 2:
-                                                TIM3->CCR3=5;    //0°关门
+                                                TIM3->CCR3=Close_Door;    //0°关门
                                                 delay_ms(1000);  //给舵机回位留一定的时间
                                                 Door_Flag=0;
                                                 break;
@@ -278,24 +278,22 @@ int main(void)
                                 
                                 if(Show_flag!=0)
                                 {
-//                                        OLED_Fill(0x00);
+                                        __ASM("CPSID I");        //关中断
                                         sprintf(temp,"%d.%d     ",Temp_int,Temp_deci);
                                         //DHT11的湿度
 //                                     sprintf(Humi,"%d.%d",Humi_int,Humi_deci);
                                         //土壤的湿度
-                                        sprintf(Humi,"%0.2f     ",Soil_Humidity);  //5个空格不能少
-                                        sprintf(lighting,"%0.2f     ",Illumination);
-//                                        __ASM("CPSID I");        //关中断
-                                        OLED_ShowStr(0,0,"    ",2);     //4个空格
-                                        OLED_ShowStr(97,0,"   ",2);     //3个空格
+                                        sprintf(Humi,"%.1f     ",Soil_Humidity);  //4个空格不能少
+                                        sprintf(lighting,"%4.2f   ",Illumination);
+                                        __ASM("CPSIE I"); //开中断
+                                        OLED_ShowStr(0,0,"   ",2);     //4个空格
+                                        OLED_ShowStr(97,0,"  ",2);     //3个空格
                                         
                                         OLED_ShowCN(32,0,4,title);      //显示标题----智慧农业
                                         OLED_ShowCN(0,2,3,temp_code);   //显示温度
                                         OLED_ShowCN(0,4,3,Humi_code);   //显示湿度
                                         OLED_ShowCN(0,6,3,light);       //显示光强
                                         OLED_ShowStr(49,2,temp,2);
-//                                        OLED_ShowStr(113,2,"  ",2);
-//                                        OLED_ShowStr(113,3,"  ",2);
                                         OLED_ShowStr(49,4,Humi,2);
                                         OLED_ShowStr(49,6,lighting,2);
 //                                        __ASM("CPSIE I"); //开中断
@@ -308,8 +306,6 @@ int main(void)
                                         OLED_ShowCN(32,0,4,title);      //显示标题----智慧农业
                                         OLED_ShowCN(0,2,2,Air_Temp);
                                         OLED_ShowCN(0,4,2,Irrigation);
-//                                        OLED_ShowStr(113,2,"  ",2);
-//                                        OLED_ShowStr(113,3,"  ",2);
                                         OLED_ShowCN(0,6,2,Exhaust);
                                         OLED_ShowCN(33,2,3,System);
                                         OLED_ShowCN(33,4,3,System);

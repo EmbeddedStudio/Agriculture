@@ -72,8 +72,8 @@
 
 
 #define BEEP_TOGGLE        digitalToggle(BEEP_GPIO_PORT,BEEP_GPIO_PIN)
-#define BEEP_ON            digitalHi(BEEP_GPIO_PORT,BEEP_GPIO_PIN)
-#define BEEP_OFF           digitalLo(BEEP_GPIO_PORT,BEEP_GPIO_PIN)
+#define BEEP_ON            digitalLo(BEEP_GPIO_PORT,BEEP_GPIO_PIN)
+#define BEEP_OFF           digitalHi(BEEP_GPIO_PORT,BEEP_GPIO_PIN)
 
 /* 基本混色，后面高级用法使用PWM可混出全彩颜色,且效果更好 */
 

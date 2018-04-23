@@ -174,12 +174,12 @@ void Down_Control(void)
         }
         if(! (strcmp("setHydrovalve1", name) || strcmp("true", status) ) ) 
         {
-                Water_ON;  //添加需要的代码
+                TemDown_ON;  //添加需要的代码
                 Irrigation_flag=1;
         }
         if(! (strcmp("setHydrovalve1", name) || strcmp("false", status) ) ) 
         {
-                Water_OFF;   //添加需要的代码
+                TemDown_OFF;   //添加需要的代码
                 Irrigation_flag=0;
         }
         

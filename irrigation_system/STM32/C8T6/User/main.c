@@ -55,6 +55,11 @@ int main(void)
         Mode = General_Mode;
         while(1)
         {
+//                TemDown_ON;
+//                delay_ms(2000);
+//                
+//                TemDown_OFF;
+//                delay_ms(2300);
                 Illumination=Read_Light();
                 if(Temp_int>Temperature_Max)
                 {
@@ -269,11 +274,11 @@ int main(void)
                                 //调光   如果光强小于一定的时候就开灯
                                 if( Illumination < light_Min)
                                 {
-                                        Water_ON;
+                                        LED_ON;
                                 }
                                 if( Illumination > light_Max)
                                 {
-                                        Water_OFF;
+                                        LED_OFF;
                                 }
                                 
                                 if(Show_flag!=0)
@@ -352,11 +357,11 @@ void  Temperature_System (void)
                 if( Temperature > temp_max )
                 {
                                  //关闭太阳灯并开启水阀进行降温
-                        TemDown_ON;
+//                        TemDown_ON;
                 }
                 else if ( Temperature < ((temp_max+temp_min)/2)  )
                 {
-                        TemDown_OFF;
+//                        TemDown_OFF;
                 }
                 else if ( Temperature > ((temp_max+temp_min)/2)  )
                 {

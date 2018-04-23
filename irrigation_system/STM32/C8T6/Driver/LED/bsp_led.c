@@ -31,6 +31,6 @@ void LED_GPIO_Config(void)
         GPIO_ResetBits(Water_GPIO_PORT, Water_GPIO_PIN);
         GPIO_ResetBits(TemDown_GPIO_PORT, TemDown_GPIO_PIN); 
         GPIO_ResetBits(LED_GPIO_PORT, LED_GPIO_PIN);
-        GPIO_ResetBits(BEEP_GPIO_PORT, BEEP_GPIO_PIN);
+        GPIO_SetBits(BEEP_GPIO_PORT, BEEP_GPIO_PIN);
         GPIO_SetBits(DOOR_GPIO_PORT,DOOR_GPIO_PIN);   //拉高假设门未关
 }

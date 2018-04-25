@@ -134,11 +134,11 @@ void Updata (void)
 //                DHT11_Data.temp_int,DHT11_Data.temp_deci,DHT11_Data.humi_int,DHT11_Data.humi_deci,Illumination);
         }
         //湿度来自于DHT11
-//        sprintf ( DataStr,"{\"Temperature\":\"%d.%d\",\"Humidity\":\"%d.%d\",\"Illumination\":\"%0.2f\"}",\
-//                Temp_int,Temp_deci,Humi_int,Humi_deci,Illumination);
-        //湿度来自于土壤湿度传感器
-        sprintf ( DataStr,"{\"Temperature\":\"%d.%d\",\"Humidity\":\"%0.2f\",\"Illumination\":\"%0.2f\"}",\
-                Temp_int,Temp_deci,Soil_Humidity,Illumination);
+        sprintf ( DataStr,"{\"Temperature\":\"%d.%d\",\"Humidity\":\"%d.%d\",\"Illumination\":\"%0.2f\"}",\
+                Temp_int,Temp_deci,Humi_int,Humi_deci,Illumination);
+//        //湿度来自于土壤湿度传感器
+//        sprintf ( DataStr,"{\"Temperature\":\"%d.%d\",\"Humidity\":\"%0.2f\",\"Illumination\":\"%0.2f\"}",\
+//                Temp_int,Temp_deci,Soil_Humidity,Illumination);
         printf("%s\r\n",DataStr);
         Usart2_SendString(USART2,DataStr);
 }
@@ -165,12 +165,14 @@ void Down_Control(void)
         if(! (strcmp("setMotor1", name) || strcmp("true", status) ) ) 
         {
                 //LED1_ON;   //添加需要的代码
-                //Exhaust_flag=1;
+                Wind_ON;
+                Exhaust_flag=1;
         }
         if(! (strcmp("setMotor1", name) || strcmp("false", status) ) ) 
         {
                 //Water_OFF;  //添加需要的代码
-                //Exhaust_flag=0;
+                Wind_OFF;
+                Exhaust_flag=0;
         }
         if(! (strcmp("setHydrovalve1", name) || strcmp("true", status) ) ) 
         {

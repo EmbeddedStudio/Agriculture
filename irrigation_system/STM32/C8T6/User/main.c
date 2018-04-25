@@ -281,15 +281,15 @@ int main(void)
                                         LED_OFF;
                                 }
                                 
-                                if(Show_flag!=0)
+                                if(Show_flag!=0)//显示传感器的数据
                                 {
                                         __ASM("CPSID I");        //关中断
                                         sprintf(temp,"%d.%d     ",Temp_int,Temp_deci);
                                         //DHT11的湿度
-//                                     sprintf(Humi,"%d.%d",Humi_int,Humi_deci);
-                                        //土壤的湿度
-                                        sprintf(Humi,"%.1f     ",Soil_Humidity);  //4个空格不能少
-                                        sprintf(lighting,"%4.2f   ",Illumination);
+                                        sprintf(Humi,"%d.%d    ",Humi_int,Humi_deci);
+//                                        //土壤的湿度
+//                                        sprintf(Humi,"%.1f     ",Soil_Humidity);  //4个空格不能少
+                                        sprintf(lighting,"%4.2f    ",Illumination);
                                         __ASM("CPSIE I"); //开中断
                                         OLED_ShowStr(0,0,"   ",2);     //4个空格
                                         OLED_ShowStr(97,0,"  ",2);     //3个空格

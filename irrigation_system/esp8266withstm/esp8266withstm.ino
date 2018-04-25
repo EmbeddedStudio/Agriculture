@@ -2,8 +2,8 @@
 #include <ArduinoJson.h>
 #include <PubSubClient.h>
 
-char ssid[] = "360WiFi-48681F";
-char pass[] = "dianxin151";
+char ssid[] = "s008-flying";
+char pass[] = "dianxin132";
 
 #define  greenhouseID  "8e27efe0-eb81-11e7-8341-353f63eeab61"
 #define  greenhouseKEY "i8j8gFS00lwaNzSOxrEe"

@@ -25,6 +25,10 @@
 #define BEEP_GPIO_CLK           RCC_APB2Periph_GPIOA        /* GPIO端口时钟 */
 #define BEEP_GPIO_PIN           GPIO_Pin_8              /* 连接到SCL时钟线的GPIO */
 
+
+#define Wind_GPIO_PORT          GPIOB                            /* GPIO端口 */
+#define Wind_GPIO_CLK           RCC_APB2Periph_GPIOB        /* GPIO端口时钟 */
+#define Wind_GPIO_PIN           GPIO_Pin_0
 /** the macro definition to trigger the led on or off 
   * 1 - off
   *1 - on
@@ -74,6 +78,11 @@
 #define BEEP_TOGGLE        digitalToggle(BEEP_GPIO_PORT,BEEP_GPIO_PIN)
 #define BEEP_ON            digitalLo(BEEP_GPIO_PORT,BEEP_GPIO_PIN)
 #define BEEP_OFF           digitalHi(BEEP_GPIO_PORT,BEEP_GPIO_PIN)
+
+
+#define Wind_TOGGLE      digitalToggle(Water_GPIO_PORT,Water_GPIO_PIN)
+#define Wind_ON          digitalHi(Water_GPIO_PORT,Water_GPIO_PIN)
+#define Wind_OFF         digitalLo(Water_GPIO_PORT,Water_GPIO_PIN)
 
 /* 基本混色，后面高级用法使用PWM可混出全彩颜色,且效果更好 */
 

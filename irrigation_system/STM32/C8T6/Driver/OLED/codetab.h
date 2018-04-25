@@ -15,6 +15,18 @@ extern unsigned char  Air_Temp[] ;
 extern unsigned char Close[];
 extern unsigned char Open[];
 extern unsigned char System[];
-
+extern unsigned char successful[];
+extern unsigned char fail[];
+extern unsigned char abnormal[];
+extern unsigned char begin_card1[];
+extern unsigned char begin_card2[];
+extern unsigned char NFC[];
+extern unsigned char please[];
+extern unsigned char pleaseagain[];
+extern unsigned char card_already[];
+extern unsigned char enter[];
+extern unsigned char inconformity[];
+extern unsigned char Nodoor[];
+extern unsigned char High_Temperature[];
 #endif /*__CODETAB_H*/
 

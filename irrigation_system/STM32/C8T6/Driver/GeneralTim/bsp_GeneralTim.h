@@ -12,15 +12,18 @@
 #define            GENERAL_TIM                   TIM3
 #define            GENERAL_TIM_APBxClock_FUN     RCC_APB1PeriphClockCmd
 #define            GENERAL_TIM_CLK               RCC_APB1Periph_TIM3
-#define            GENERAL_TIM_Prescaler         71
-#define            GENERAL_TIM_Period            24
+#define            GENERAL_TIM_Prescaler         (7200-1)  //分频因子，只作为计算+1的频率不参与占空比的运算
+#define            GENERAL_TIM_Period            200   //ARR和分频因子一起决定PWM周期
 #define            GENERAL_TIM_pulse             15      
 
-// TIM3 输出比较通道1
-#define            GENERAL_TIM_CH1_GPIO_CLK      RCC_APB2Periph_GPIOA
-#define            GENERAL_TIM_CH1_PORT          GPIOA
-#define            GENERAL_TIM_CH1_PIN           GPIO_Pin_6
+// TIM3 输出比较通道3\4
+#define            GENERAL_TIM_CH3_GPIO_CLK      RCC_APB2Periph_GPIOB
+#define            GENERAL_TIM_CH3_PORT          GPIOB
+#define            GENERAL_TIM_CH3_PIN           GPIO_Pin_0
 
+#define            GENERAL_TIM_CH4_GPIO_CLK      RCC_APB2Periph_GPIOB
+#define            GENERAL_TIM_CH4_PORT          GPIOB
+#define            GENERAL_TIM_CH4_PIN           GPIO_Pin_1
 
 /**************************函数声明********************************/
 

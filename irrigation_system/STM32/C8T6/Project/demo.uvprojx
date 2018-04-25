@@ -369,7 +369,7 @@
               <MiscControls></MiscControls>
               <Define>STM32F10X_MD, USE_STDPERIPH_DRIVER</Define>
               <Undefine></Undefine>
-              <IncludePath>..\Startup;..\Libiary\inc;..\Driver\systick;..\Driver\usart;..\User;..\Driver\dht11;..\Driver\GeneralTim;..\Driver\LED;..\Driver\TimBase;..\Driver\usart2;..\Driver\i2c;..\Driver\tsl2561;..\Driver\OLED</IncludePath>
+              <IncludePath>..\Startup;..\Libiary\inc;..\Driver\systick;..\Driver\usart;..\User;..\Driver\dht11;..\Driver\GeneralTim;..\Driver\LED;..\Driver\TimBase;..\Driver\usart2;..\Driver\i2c;..\Driver\tsl2561;..\Driver\OLED;..\Driver\spi;..\Driver\RC522;..\Driver\GeneralTim;..\Driver\adc;..\Driver\SD</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
@@ -460,6 +460,21 @@
               <FileType>1</FileType>
               <FilePath>..\Libiary\src\stm32f10x_usart.c</FilePath>
             </File>
+            <File>
+              <FileName>stm32f10x_spi.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Libiary\src\stm32f10x_spi.c</FilePath>
+            </File>
+            <File>
+              <FileName>stm32f10x_adc.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Libiary\src\stm32f10x_adc.c</FilePath>
+            </File>
+            <File>
+              <FileName>stm32f10x_flash.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Libiary\src\stm32f10x_flash.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
@@ -519,6 +534,21 @@
               <FileName>codetab.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\Driver\OLED\codetab.c</FilePath>
+            </File>
+            <File>
+              <FileName>bsp_rc522.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Driver\RC522\bsp_rc522.c</FilePath>
+            </File>
+            <File>
+              <FileName>bsp_spi.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Driver\spi\bsp_spi.c</FilePath>
+            </File>
+            <File>
+              <FileName>bsp_adc.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Driver\adc\bsp_adc.c</FilePath>
             </File>
           </Files>
         </Group>

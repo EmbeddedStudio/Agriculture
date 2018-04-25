@@ -17,12 +17,24 @@
 #define LED_GPIO_CLK           RCC_APB2Periph_GPIOB        /* GPIO端口时钟 */
 #define LED_GPIO_PIN           GPIO_Pin_14              /* 连接到SCL时钟线的GPIO */
 
+#define DOOR_GPIO_PORT          GPIOA                   /* GPIO端口 */
+#define DOOR_GPIO_CLK           RCC_APB2Periph_GPIOA        /* GPIO端口时钟 */
+#define DOOR_GPIO_PIN           GPIO_Pin_15              /* 连接到SCL时钟线的GPIO */
+        
+#define BEEP_GPIO_PORT          GPIOA                    /* GPIO端口 */
+#define BEEP_GPIO_CLK           RCC_APB2Periph_GPIOA        /* GPIO端口时钟 */
+#define BEEP_GPIO_PIN           GPIO_Pin_8              /* 连接到SCL时钟线的GPIO */
+
+
+#define Wind_GPIO_PORT          GPIOB                            /* GPIO端口 */
+#define Wind_GPIO_CLK           RCC_APB2Periph_GPIOB        /* GPIO端口时钟 */
+#define Wind_GPIO_PIN           GPIO_Pin_0
 /** the macro definition to trigger the led on or off 
   * 1 - off
-  *0 - on
+  *1 - on
   */
-#define ON  0
-#define OFF 1
+#define ON  1
+#define OFF 0
 
 /* 使用标准的固件库控制IO*/
 #define Water(a) if (a)  \
@@ -46,6 +58,8 @@
 #define digitalLo(p,i)  {p->BRR=i;}     //输出低电平
 #define digitalToggle(p,i) {p->ODR ^=i;} //输出反转状态
 
+#define READDOOR         ((DOOR_GPIO_PORT->IDR & DOOR_GPIO_PIN)==0)   //读到的是低电平
+
 
 /* 定义控制IO的宏 */
 #define Water_TOGGLE      digitalToggle(Water_GPIO_PORT,Water_GPIO_PIN)
@@ -59,6 +73,16 @@
 #define LED_TOGGLE        digitalToggle(LED_GPIO_PORT,LED_GPIO_PIN)
 #define LED_ON            digitalHi(LED_GPIO_PORT,LED_GPIO_PIN)
 #define LED_OFF           digitalLo(LED_GPIO_PORT,LED_GPIO_PIN)
+
+
+#define BEEP_TOGGLE        digitalToggle(BEEP_GPIO_PORT,BEEP_GPIO_PIN)
+#define BEEP_ON            digitalLo(BEEP_GPIO_PORT,BEEP_GPIO_PIN)
+#define BEEP_OFF           digitalHi(BEEP_GPIO_PORT,BEEP_GPIO_PIN)
+
+
+#define Wind_TOGGLE      digitalToggle(Water_GPIO_PORT,Water_GPIO_PIN)
+#define Wind_ON          digitalHi(Water_GPIO_PORT,Water_GPIO_PIN)
+#define Wind_OFF         digitalLo(Water_GPIO_PORT,Water_GPIO_PIN)
 
 /* 基本混色，后面高级用法使用PWM可混出全彩颜色,且效果更好 */
 

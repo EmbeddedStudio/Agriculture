@@ -2,6 +2,7 @@
 #include "codetab.h"
 #include "bsp_i2c.h"
 #include "bsp_systick.h"
+#include "bsp_usart.h"
 
 static void WriteDat(unsigned char I2C_Data)//写数据
 {
@@ -101,7 +102,7 @@ void OLED_Fill(unsigned char fill_Data)//全屏填充
 
 void OLED_CLS(void)//清屏
 {
-        OLED_Fill(0x00);
+        OLED_ShowStr(0,0,"          ",2);
 }
 
 //--------------------------------------------------------------

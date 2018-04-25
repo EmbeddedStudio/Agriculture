@@ -2,6 +2,8 @@
 #include "bsp_i2c.h"
 #include "bsp_usart.h"
 
+float light_Min=50.0;
+float light_Max=150.0;
  void TSL2561_Write(u8 addr,u8 cmd) 
 {
         I2C_Start();
@@ -57,7 +59,7 @@ float Read_Light(void )
         DataLow0=TSL2561_Read(TSL2561_DATA0_LOW);
         DataHigh0=TSL2561_Read(TSL2561_DATA0_HIGH);
         ch0=(DataHigh0<<8|DataLow0);
-        
+         
         DataLow1=TSL2561_Read(TSL2561_DATA1_LOW);
         DataHigh1=TSL2561_Read(TSL2561_DATA1_HIGH);
         ch1=(DataHigh1<<8|DataLow1);
@@ -84,8 +86,8 @@ float Read_Light(void )
         {  
                 lx=0;  
         }  
-        
-        return lx;
+//        return lx;              //流明单位
+        return lx*4*3.14;     //坎德拉单位
 } 
 
 

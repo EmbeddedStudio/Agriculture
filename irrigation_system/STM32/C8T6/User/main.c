@@ -1,232 +1,432 @@
-#include "stm32f10x.h"
-#include "bsp_systick.h"
-#include "bsp_usart.h"
-#include "bsp_usart2.h"
-#include "bsp_dht11.h"
-#include "bsp_led.h"
-#include "bsp_TiMbase.h" 
-#include <string.h>
-#include "bsp_i2c.h"
-#include "bsp_OLED.h"
-#include "bsp_tsl2561.h"
-#include "stm32f10x_it.h"
-#include "codetab.h"
-#include "stdlib.h"
+#include "main.h"
 
-extern u8 USart8266_temp[200];
-extern u8 USART2_IT_Flag;
-extern u8 Time_Flag;
+const uint32_t Administrator_ID = 0x9276381B;           //管理员卡号
+const uint32_t Initial=0x00000000;                      //默认没刷到卡的返回值
+const u8  Open_Door=  15;
+const u8  Close_Door=  5;
 
-void  Temperature_System(void);
-void Network_System(void);
-void Receave_System(void);
-void System_Init(void);
-
-char DataStr [ 500 ] = { 0 };
-
-u8 Temp_flag = 1 ;
+u8 Temp_flag = 1 ;                      //是否开启自动调温系统
 u8 Show_flag = 0;
+u8 BEEP_Flag = 0 ;
 u8 Irrigation_flag=0;   //喷灌标志
 u8 Exhaust_flag=0;      //排风标志
+u8 Administ_Flag=0;            //管理员标志，用于开始计时三秒后如果还是管理员才进入录入模式
+u8 Administ_Entering=0;        //真正确定是否进入录入模式的标志
+float Illumination=0;                   //光强值
+u8 anomaly = 0;           //异常种类 0未关门 1未知卡刷卡  2温度过高
+char temp[20];                  //装载字符串用于屏幕显示
+char Humi[20];
+char lighting[20];
+char Blank[16]="               ";   //15个空格 不能少
+u32 ID_Card[256];                       //用于存储录入的卡号
+u8 Step=0;                      //录卡的步骤
+u8 Mode;
+u8 Door_Flag=2;         //0默认  不给方波   1开门  2关门
+
+
 int main(void)
 {
-        
-        System_Init();
+        System_Init();                  //系统初始化
         printf("[%s][%d]\r\n", __func__, __LINE__);
         
+        /*************************局部变量的定义**************************/
+        char cCard_str[20];
+        u8 Entering_Flag=1;
+        uint32_t New_Card =0x22222222;      //新的卡号，用于临时存储将要录入的卡号
+        uint32_t New_Card1=0x88888888;      //新的卡号，用于临时存储将要录入的卡号
+        uint32_t New_Card2=0x66666666;      //新的卡号，用于临时存储将要录入的卡号
+//              The_System_First_Run();                //函数慎用
+        uint32_t *p_Pos= (uint32_t *)(Pos_Address);
+        uint32_t  Card_Pos=*p_Pos;
+        uint32_t *p_Card;
+        u8 i;           //用于加载钥匙库的循环变量以及遍历的循环变量
+
+        u8 Temperature_Max=26.00;          //高温预警的阈值
+        
+        //把 flash 里面的 ID 号加载到内存中来
+        printf("\r\n现在有%d个卡号\r\n",*p_Pos);
+        for(i=0;i<Card_Pos;i++)
+        {
+                p_Card = (uint32_t *)(Card_Address+i*4);
+                ID_Card[i]=*p_Card;
+                printf("ID为%8X\r\n",ID_Card[i]);
+        }
+        
+        Mode = General_Mode;
         while(1)
         {
-                if(Temp_flag!=0)
+//                TemDown_ON;
+//                delay_ms(2000);
+//                
+//                TemDown_OFF;
+//                delay_ms(2300);
+                Illumination=Read_Light();
+                if(Temp_int>Temperature_Max)
                 {
-                        Temperature_System();   //调用恒温系统执行函数
+                        Mode=Abnormal_Mode;
+                        anomaly=2;
                 }
+//                else          //模式不能随意改变
+//                {
+//                        Mode=General_Mode;
+//                }
+                New_Card=RFID_Number();
+                //从内存里查询是否有这个卡号
+                for(i=0;i<Card_Pos;i++)
+                {
+                        if(New_Card==ID_Card[i])
+                        {
+                                Door_Flag=1;
+                                Door_Time=0;
+                                if(Mode!=Entering_Mode)
+                                {
+                                        BEEP_OFF;
+                                        Mode=General_Mode;
+                                        BEEP_Flag=0;
+                                }
+                                break;
+                        }
+                        if(i==Card_Pos-1 && New_Card!=Initial && Mode!=Entering_Mode)
+                        {
+                                printf("[%s][%d]\r\n", __func__, __LINE__);
+                                //查询后未找到卡确定为未知卡刷卡则报警
+                                Mode=Abnormal_Mode;
+                                Door_Flag=2;
+                                Door_Time=0;
+                                BEEP_Flag=1;
+                                BEEP_Time=0;
+                                anomaly=1;
+                        }
+                }
+                //普通模式下的管理员开门并且开始计时
                 
-                if( Time_Flag!=0 )    
+                if( (New_Card == Administrator_ID) && (Mode==General_Mode) && Administ_Entering==0 )
                 {
-                        Network_System();       //调用网络函数，把传感器的值传上去
-                        Time_Flag=0;
+                        Administ_Flag=1;             //标志位置1让定时器开始计时
+                        
                 }
-                
-                /* 解析串口接收的字符串  */
-                if( USART2_IT_Flag != 0 )
+                //5秒时间到   并且步骤卡号模式都正确那么将进入录入模式
+                if( (Administ_Entering!=0) && Step==0 &&  (Administrator_ID == New_Card)  && (Mode==General_Mode) )
                 {
-                        Receave_System();
-                        USART2_IT_Flag=0;
+                        Administ_Entering=0;
+                        Administ_Time=0;                 //进入录入模式之后将Administ_Entering关闭
+                        Step=1;                          //同时计时清零  狡兔死走狗烹
+                        Mode=Entering_Mode;
+                        delay_ms(1000);
+                        printf("开始录入新的卡号\r\n");
+                        OLED_ShowStr(0,0,Blank,2);         //16个空格
+                        OLED_ShowStr(0,1,Blank,2);
+                        OLED_ShowStr(0,2,"    ",2);
+                        OLED_ShowCN(32,2,4,begin_card1);
+                        OLED_ShowStr(97,2,"    ",2);
+                        OLED_ShowStr(0,4,"    ",2);
+                        OLED_ShowCN(32,4,4,begin_card2);
+                        OLED_ShowStr(97,4,"    ",2);
+                        OLED_ShowStr(0,6,Blank,2);
+                        OLED_ShowStr(0,7,Blank,2);
+                }
+                switch(Mode)
+                {
+                        case Abnormal_Mode:             //异常模式
+                        
+                        if(BEEP_Flag!=0)        //蜂鸣器响30秒后停止
+                        {                       
+                                BEEP_ON;
+                                        //屏幕持续显示异常原因直到正常为止
+                                TIM3->CCR3=Close_Door;    //0°关门
+                                OLED_ShowStr(0,0,Blank,2);         //16个空格
+                                OLED_ShowStr(0,1,Blank,2);
+                                OLED_ShowStr(0,5,Blank,2);
+                                OLED_ShowStr(0,6,Blank,2);
+                                OLED_ShowStr(0,7,Blank,2);
+                                switch(anomaly)
+                                {
+                                        case 0  :       // 未关门
+                                                OLED_ShowStr(0,3,"    ",2);
+                                                OLED_ShowStr(97,3,"   ",2);
+                                                OLED_ShowCN(32,3,4,Nodoor);
+                                                break;
+                                        case 1  :       // 未知卡刷卡
+                                                OLED_ShowStr(0,3,"    ",2);
+                                                OLED_ShowStr(97,3,"   ",2);
+                                                OLED_ShowCN(32,3,2,NFC);
+                                                OLED_ShowCN(64,3,2,fail);
+                                                break;
+                                        case 2  :       // 高温预警
+                                                OLED_ShowStr(0,3,"    ",2);
+                                                OLED_ShowStr(97,3,"   ",2);
+                                                OLED_ShowCN(32,3,4,High_Temperature);
+                                                break;
+                                        default :
+                                                break;
+                                }
+                        }
+                        else
+                        {
+                                Mode=General_Mode;
+                                BEEP_OFF;
+                        }
+                        break ; 
+                        
+                        case Entering_Mode:             //录入模式
+                                        
+                                        if(Step==1 && New_Card!=Administrator_ID && New_Card!=Initial  )
+                                        {
+                                                New_Card1=New_Card;
+                                                Step=2;
+                                                printf("New_Card1:%08X  ",New_Card1);
+                                                __ASM("CPSID I");        //关中断
+                                                sprintf(cCard_str,"    %08X    ",New_Card1);
+                                                __ASM("CPSIE I"); //开中断
+                                                OLED_ShowCN(32,1,2,NFC);
+                                                OLED_ShowCN(64,1,2,successful);
+                                                OLED_ShowStr(0,3,cCard_str,2);
+                                                OLED_ShowStr(0,5,"     ",2);
+                                                OLED_ShowStr(89,5,"    ",2);
+                                                OLED_ShowCN(40,5,3,please);
+                                                
+                                        }
+                                        if(New_Card==Administrator_ID && Step==2)
+                                        {
+                                                Step=3;
+                                                OLED_ShowStr(0,0,Blank,2);
+                                                OLED_ShowStr(0,1,Blank,2);
+                                                OLED_ShowStr(0,2,Blank,2);
+                                                OLED_ShowStr(0,5,Blank,2);
+                                                OLED_ShowStr(0,6,Blank,2);
+                                                OLED_ShowCN(24,3,5,pleaseagain);
+                                                
+                                        }
+                                        if( Step==3 && New_Card!=Administrator_ID && New_Card!=Initial )
+                                        {
+                                                New_Card2=New_Card;
+                                                Step=4;
+                                        }
+
+                                        if( Step==4 && New_Card1==New_Card2 )
+                                        {
+                                               
+                                                for (i=0;i<Card_Pos;i++)
+                                                {
+                                                        if(New_Card2==ID_Card[i])
+                                                        {
+                                                                printf("此卡已录入\r\n");
+                                                                OLED_ShowCN(24,3,5,card_already);
+                                                                delay_ms(500);
+                                                                Entering_Flag=0;
+                                                                break;
+                                                        }
+                                                }
+                                                if(Entering_Flag!=0)
+                                                {
+                                                        ID_Card[Card_Pos]=New_Card2;
+                                                        FLASH_Unlock();
+                                                        FLASH_ProgramWord(Card_Address+Card_Pos*4,New_Card2);
+                                                        FLASH_ErasePage(Pos_Address);
+                                                        FLASH_ProgramWord(Pos_Address,Card_Pos+1);
+                                                        FLASH_Lock();
+                                                        Card_Pos=Card_Pos+1;
+                                                        printf("录入成功\r\n");
+                                                        printf("新的卡号为：%08X\r\n",New_Card2);
+//                                                        OLED_ShowStr(0,3,Blank,2);
+                                                        OLED_ShowStr(0,2,"    ",2);
+                                                        OLED_ShowStr(0,97,"   ",2);
+                                                        OLED_ShowCN(32,2,2,enter);
+                                                        OLED_ShowCN(64,2,2,successful);
+                                                        OLED_ShowStr(0,4,cCard_str,2);
+                                                        delay_ms(500);
+                                                }
+                                                Entering_Flag=1;
+                                                Step=0;
+                                                Mode= General_Mode;
+                                        }
+                                        if(New_Card1!=New_Card2 && Step==4)
+                                        {
+                                                printf("两张卡不一致\r\n");
+                                                OLED_ShowCN(16,3,6,inconformity);
+                                                delay_ms(500);
+                                                Step=0;
+                                                Mode= General_Mode;
+                                        }
+                        break ;
+                        
+                        case General_Mode:              //普通模式
+                                
+                                if(Temp_flag!=0)
+                                {
+                                        Temperature_System();   //调用恒温系统执行函数
+                                }
+                                
+                                switch(Door_Flag)   //0默认  不给方波   1开门  2关门
+                                {
+                                        case 1:
+                                                TIM3->CCR3=Open_Door;    //90°开门
+                                                break;
+                                        case 2:
+                                                TIM3->CCR3=Close_Door;    //0°关门
+                                                delay_ms(1000);  //给舵机回位留一定的时间
+                                                Door_Flag=0;
+                                                break;
+                                        default:
+                                                TIM3->CCR3=0;    //防止抖动
+                                                break;
+                                }
+                                //调光   如果光强小于一定的时候就开灯
+                                if( Illumination < light_Min)
+                                {
+                                        LED_ON;
+                                }
+                                if( Illumination > light_Max)
+                                {
+                                        LED_OFF;
+                                }
+                                
+                                if(Show_flag!=0)//显示传感器的数据
+                                {
+                                        __ASM("CPSID I");        //关中断
+                                        sprintf(temp,"%d.%d     ",Temp_int,Temp_deci);
+                                        //DHT11的湿度
+                                        sprintf(Humi,"%d.%d    ",Humi_int,Humi_deci);
+//                                        //土壤的湿度
+//                                        sprintf(Humi,"%.1f     ",Soil_Humidity);  //4个空格不能少
+                                        sprintf(lighting,"%4.2f    ",Illumination);
+                                        __ASM("CPSIE I"); //开中断
+                                        OLED_ShowStr(0,0,"   ",2);     //4个空格
+                                        OLED_ShowStr(97,0,"  ",2);     //3个空格
+                                        
+                                        OLED_ShowCN(32,0,4,title);      //显示标题----智慧农业
+                                        OLED_ShowCN(0,2,3,temp_code);   //显示温度
+                                        OLED_ShowCN(0,4,3,Humi_code);   //显示湿度
+                                        OLED_ShowCN(0,6,3,light);       //显示光强
+                                        OLED_ShowStr(49,2,temp,2);
+                                        OLED_ShowStr(49,4,Humi,2);
+                                        OLED_ShowStr(49,6,lighting,2);
+//                                        __ASM("CPSIE I"); //开中断
+                                }
+                                else
+                                {
+//                                        __ASM("CPSID I");        //关中断
+                                        OLED_ShowStr(0,0,"    ",2);     //4个空格
+                                        OLED_ShowStr(97,0,"   ",2);     //3个空格
+                                        OLED_ShowCN(32,0,4,title);      //显示标题----智慧农业
+                                        OLED_ShowCN(0,2,2,Air_Temp);
+                                        OLED_ShowCN(0,4,2,Irrigation);
+                                        OLED_ShowCN(0,6,2,Exhaust);
+                                        OLED_ShowCN(33,2,3,System);
+                                        OLED_ShowCN(33,4,3,System);
+                                        OLED_ShowCN(33,6,3,System);
+                                        if(Temp_flag!=0)
+                                        {
+                                                OLED_ShowCN(81,2,2,Open);
+                                        }
+                                        else
+                                        {
+                                                OLED_ShowCN(81,2,2,Close);
+                                        }
+                                        if(Irrigation_flag!=0)
+                                        {
+                                                OLED_ShowCN(81,4,2,Open);
+                                        }
+                                        else
+                                        {
+                                                OLED_ShowCN(81,4,2,Close);
+                                        }
+                                        if(Exhaust_flag!=0)
+                                        {
+                                                OLED_ShowCN(81,6,2,Open);
+                                        }
+                                        else
+                                        {
+                                                OLED_ShowCN(81,6,2,Close);
+                                        }
+//                                        __ASM("CPSIE I"); //开中断
+                                }
+                        break ;
+                        default :
+                                break;
                 }
         }
 }
 
 
-void Receave_System(void)
-{
-        char *p;
-        char *name=NULL;
-        char *status=NULL;
-        
-        
-        printf("receave %s",USart8266_temp);
-        p = strtok((char*)USart8266_temp, "_");
-        if(p)
-        {
-                name = p;
-        }
-        p = strtok(NULL, "_");
-        if(p)
-        {
-                status = p;
-        }
-        if(! (strcmp("setMotor1", name) || strcmp("true", status) ) ) 
-        {
-                //LED1_ON;   //添加需要的代码
-                //Exhaust_flag=1;
-        }
-        if(! (strcmp("setMotor1", name) || strcmp("false", status) ) ) 
-        {
-                //Water_OFF;  //添加需要的代码
-                //Exhaust_flag=0;
-        }
-        if(! (strcmp("setHydrovalve1", name) || strcmp("true", status) ) ) 
-        {
-                Water_ON;  //添加需要的代码
-                Irrigation_flag=1;
-        }
-        if(! (strcmp("setHydrovalve1", name) || strcmp("false", status) ) ) 
-        {
-                Water_OFF;   //添加需要的代码
-                Irrigation_flag=0;
-        }
-        
-        /*
-         if()   //用户关闭升温系统
-        {
-                Temp_flag = 0 ;
-        }
-        if()   //用户开启升温系统
-        {
-                Temp_flag = 1 ;
-        }
-        if()   //接收来自云端设置的阈值
-        {
-                temp_max =  ;
-        }
-        if()    //接收来自云端设置的阈值
-        {
-                temp_min =  ;
-        }
-        
-        */
-}
 
-void Network_System(void)
+void  Temperature_System (void)
 {
-        /*装载 JSON 格式字符串*/
-        DHT11_Data_TypeDef   DHT11_Data;
-        float Illumination=0;
-        char temp[10];
-        char Humi[10];
-        char lighting[10];
-        
-        Illumination=Read_Light();
-        if( DHT11_Read_TempAndHumidity ( & DHT11_Data ) == SUCCESS)
+        if(Temp_flag!=0)
         {
-                sprintf ( DataStr,"{\"Temperature\":\"%d.%d\",\"Humidity\":\"%d.%d\",\"CO2\":\"20.6\",\"PH\":\"5.6\",\"Illumination\":\"%0.2f\"}",\
-                DHT11_Data.temp_int,DHT11_Data.temp_deci,DHT11_Data.humi_int,DHT11_Data.humi_deci,Illumination);
-        }
-        printf("%s\r\n",DataStr);
-        Usart2_SendString(USART2,DataStr);
-        if(Show_flag==0)
-        {
-                sprintf(temp,"%d.%d",DHT11_Data.temp_int,DHT11_Data.temp_deci);
-                sprintf(Humi,"%d.%d",DHT11_Data.humi_int,DHT11_Data.humi_deci);
-                sprintf(lighting,"%0.2f",Illumination);
-                OLED_Fill(0x00);
-                OLED_ShowCN(32,0,4,title);      //显示标题----智慧农业
-                OLED_ShowCN(0,2,3,temp_code);   //显示温度
-                OLED_ShowCN(0,4,3,Humi_code);   //显示湿度
-                OLED_ShowCN(0,6,3,light);       //显示光强
-                OLED_ShowStr(49,2,temp,2);
-                OLED_ShowStr(49,4,Humi,2);
-                OLED_ShowStr(49,6,lighting,2);
-                Show_flag=~Show_flag;
-        }
-        else
-        {
-//                sprintf();
-                OLED_Fill(0x00);
-                OLED_ShowCN(32,0,4,title);      //显示标题----智慧农业
-                OLED_ShowCN(0,2,2,Air_Temp);
-                OLED_ShowCN(0,4,2,Irrigation);
-                OLED_ShowCN(0,6,2,Exhaust);
-                OLED_ShowCN(33,2,3,System);
-                OLED_ShowCN(33,4,3,System);
-                OLED_ShowCN(33,6,3,System);
-                if(Temp_flag!=0)
+                if( Temperature > temp_max )
                 {
-                        OLED_ShowCN(97,2,2,Open);
+                                 //关闭太阳灯并开启水阀进行降温
+//                        TemDown_ON;
                 }
-                else
+                else if ( Temperature < ((temp_max+temp_min)/2)  )
                 {
-                        OLED_ShowCN(97,2,2,Close);
+//                        TemDown_OFF;
                 }
-                if(Irrigation_flag!=0)
+                else if ( Temperature > ((temp_max+temp_min)/2)  )
                 {
-                        OLED_ShowCN(97,4,2,Open);
+                        LED_OFF ;
                 }
-                else
+                else if ( Temperature < temp_min )
                 {
-                        OLED_ShowCN(97,4,2,Close);
+                              //关闭水阀并开启太阳灯进行升温
+                        LED_ON;
                 }
-                if(Exhaust_flag!=0)
-                {
-                        OLED_ShowCN(97,6,2,Open);
-                }
-                else
-                {
-                        OLED_ShowCN(97,6,2,Close);
-                }
-                Show_flag=~Show_flag;
-        }
-        
-}
-
-void  Temperature_System(void)
-{
-        if( Temperature > temp_max )
-        {
-                         //关闭太阳灯并开启水阀进行降温
-                TemDown_ON;
-        }
-        else if ( Temperature < ((temp_max+temp_min)/2) && Temperature > temp_min )
-        {
-                TemDown_OFF;
-        }
-        else if ( Temperature > ((temp_max+temp_min)/2) && Temperature < temp_max )
-        {
-                LED_OFF ;
-        }
-        else if ( Temperature < temp_min )
-        {
-                      //关闭水阀并开启太阳灯进行升温
-                LED_ON;
         }
 }
 void System_Init(void)
 {
         NVIC_PriorityGroupConfig(NVIC_PriorityGroup_2);
         systick_init();
-        usart_init();
+        usart_init();     //usart1
         DHT11_Init();
-        USART_Config();
+        USART_Config();    //usart2
         LED_GPIO_Config();
         BASIC_TIM_Init();
+        GENERAL_TIM_Init();
         I2C_init();
         OLED_Init();
         TSL2561_Init();
+        spi_Init();
+        ADC1_Init();
+        RC522_Init();
 }
 
+uint32_t RFID_Number ( void )
+{
+        u8 Array_ID [ 4 ];                  //先后存放IC卡的类型和UID(IC卡序列号)
+        u8 Status,i;
+        u32 Card_Number=Initial;
+        if ( ( Status = PcdRequest ( PICC_REQALL, Array_ID ) ) != MI_OK )       //寻卡
+        {
+                Status = PcdRequest ( PICC_REQALL, Array_ID );
+        }
+        if(Status==MI_OK)
+        {
+                if ( PcdAnticoll ( Array_ID ) == MI_OK )
+                {
+                        for(i=0;i<4;i++)
+                        Card_Number=(Card_Number<<8)|Array_ID[i];
+                        printf("card:%08X\r\n",Card_Number);
+                }
+        }
+        return Card_Number;
+}
 
-
-
+void The_System_First_Run( void )  //芯片首次运行时需要先屏蔽所有的代码先执行此函数，在flash 里面写入相应的数据
+{
+        uint32_t * P;
+        FLASH_Unlock();                 //此函数一旦运用原来录入的钥匙号将会被删除   慎用
+        FLASH_ErasePage(Card_Address);
+        FLASH_ErasePage(Pos_Address);
+        FLASH_ProgramWord(Card_Address,Administrator_ID);
+        FLASH_ProgramWord(Pos_Address,0x00000001);
+        FLASH_Lock();
+        P = (uint32_t *)(Card_Address);
+        printf("\r\n管理员卡号为:%8X",*P);
+        P = (uint32_t *)(Pos_Address);
+        printf("\r\n当前第一个空地址为:%d",*P);
+}
 
 
 
